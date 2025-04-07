@@ -1,0 +1,63 @@
+signup:
+  tk_title_: Sign up
+  tk_description_: Create an account
+  tk_alreadyAccount_: Already have an account?
+  tk_verifyEmailDescription_:
+    We have sent an email containing a confirmation link to {{ userEmail }}. Please click on it to activate your account. Don't waste time, the link is only valid for 24 hours.
+  tk_checkSpam_: If you don't see the email, please check your spam folder.
+  tk_successTitle_: Account created successfully
+  tk_successDescription_: Check your email for verification instructions.
+  tk_errorMessage_: An error occurred while creating the account.
+
+signin:
+  tk_title_: Sign in
+  tk_description_: Access your account
+  tk_noAccount_: Don't have an account?
+  tk_authError_: The provided credentials do not match any account.
+
+resetPasswordRequest:
+  tk_title_: Reset password request
+  tk_description_: Reset your password
+  tk_verifyResetPasswordDescription_: If an account exists with the address {{ userEmail }}, you should receive an email containing a reset link. Don't waste time, it's only valid for 10 minutes.
+  tk_checkSpam_: If you don't see the email, please check your spam folder.
+  tk_successTitle_: Reset link sent
+  tk_successDescription_: Check your email!
+  tk_errorMessage_: An error occurred while requesting a password reset link.
+
+resetPassword:
+  tk_title_: New password
+  tk_description_: Update your password
+  tk_missingTokenError_: A token password token is required to reset your password.
+  tk_invalidTokenError_: The token appears to be invalid.
+  tk_successTitle_: Password updated successfully
+  tk_successDescription_: Ready to sign in?
+  tk_verifyPasswordUpdatedDescription_: You can now sign in with your new password.
+
+fields:
+  # tk_firstName_: (common.yml > user)
+  tk_firstNameError_: First name is required
+  # tk_firstNamePlaceholder_: (common.yml > user)
+  # tk_lastName_: (common.yml > user)
+  tk_lastNameError_: Last name is required
+  # tk_lastNamePlaceholder_: (common.yml > user)
+  # tk_email_: (common.yml > user)
+  tk_emailRequired_: Email is required
+  tk_emailError_: Email is invalid
+  # tk_emailPlaceholder_: (common.yml > user)
+  tk_password_: Password
+  tk_passwordRequired_: Password is required
+  tk_newPassword_: New password
+  tk_confirmPassword_: Confirm password
+  tk_passwordMinLength_: Password must contain at least 6 characters
+  tk_confirmPasswordError_: Confirm password is required
+  tk_passwordsDoNotMatchError_: Passwords do not match
+  tk_passwordComplexityError_: Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number
+
+callToAction:
+  tk_signin_: Sign in
+  tk_backToSignin_: Back to sign in
+  tk_askForNewLink_: Ask for a new reset password link
+  tk_forgotPassword_: Forgot your password?
+  tk_sendResetPasswordLink_: Send reset password link
+  tk_updatePassword_: Update password
+  tk_signup_: Sign up

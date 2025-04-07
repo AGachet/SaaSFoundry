@@ -1,0 +1,91 @@
+/**
+ * Table : Module Type
+ */
+model ModuleType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String   @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  modules     Module[]
+
+  @@map("module_types")
+}
+
+/**
+ * Table : Module
+ */
+model Module {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique @db.VarChar(50)
+  version     String     @db.VarChar(10)
+  description String     @db.VarChar(255)
+  typeId      Int        @map("type_id")
+  isActive    Boolean    @default(false) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  type         ModuleType         @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  rolesLinked  RoleModuleLink[]
+  permissions  ModulePermission[]
+
+  @@unique([name, version])
+  @@index([isActive])
+  @@index([typeId])
+  @@map("modules")
+}
+
+/**
+ * Table : Permissions by Module
+ */
+model ModulePermission {
+  id          Int       @id @default(autoincrement())
+  moduleId    Int       @map("module_id")
+  name        String    @unique @db.VarChar(50)
+  description String    @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  module      Module                @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  rolesLinked RolePermissionLink[]
+
+  @@unique([moduleId, name])
+  @@index([moduleId])
+  @@map("module_permissions")
+}
+
+/**
+ * Table : Relation Roles - Modules
+ */
+model RoleModuleLink {
+  id        Int      @id @default(autoincrement())
+  roleId    Int                                      @map("role_id")
+  moduleId  Int                                      @map("module_id")
+  createdAt DateTime @default(now())                 @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, moduleId])
+  @@index([roleId])
+  @@index([moduleId])
+  @@map("roles_modules_links")
+}
+
+/**
+ * Table : Relation Roles - Permissions
+ */
+model RolePermissionLink {
+  roleId        Int       @map("role_id")
+  permissionId  Int       @map("permission_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  role        Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission  ModulePermission   @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("roles_permissions_links")
+}

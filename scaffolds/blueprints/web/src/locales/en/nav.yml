@@ -1,0 +1,15 @@
+main-navigation:
+  tk_dashboard_: 'Dashboard'
+  tk_features-group-1_: 'Features group 1'
+  tk_features-group-2_: 'Features group 2'
+  tk_features-group-3_: 'Features group 3'
+
+  tk_feature-1_: 'Feature 1'
+  tk_feature-2_: 'Feature 2'
+  tk_feature-3_: 'Feature 3'
+  tk_feature-4_: 'Feature 4'
+  tk_feature-5_: 'Feature 5'
+  tk_feature-6_: 'Feature 6'
+  tk_feature-7_: 'Feature 7'
+  tk_feature-8_: 'Feature 8'
+  tk_feature-9_: 'Feature 9'

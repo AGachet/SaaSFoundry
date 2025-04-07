@@ -1,0 +1,4 @@
+404-not-found:
+  title: 'Oups ! Cette page est introuvable'
+  description: 'La page que vous recherchez semble avoir disparu dans le vide numérique.'
+  button: 'Retourner en lieu sûr'

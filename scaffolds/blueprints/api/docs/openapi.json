@@ -1,0 +1,646 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/api/docs/openapi.json": {
+      "get": {
+        "description": "Returns the OpenAPI specification in JSON format for the API documentation",
+        "operationId": "ApiDocsController_getOpenApiJson",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The OpenAPI specification in JSON format"
+          },
+          "500": {
+            "description": "Internal server error or documentation not generated"
+          }
+        },
+        "summary": "Get OpenAPI documentation",
+        "tags": [
+          "Documentation"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "description": "Returns the health status of various components of the application including database connection, memory usage, and other critical services.",
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Application is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "info": {
+                      "database": {
+                        "status": "up"
+                      },
+                      "memory": {
+                        "status": "up",
+                        "details": {
+                          "heapUsed": "150MB"
+                        }
+                      }
+                    },
+                    "error": {},
+                    "details": {
+                      "database": {
+                        "status": "up"
+                      },
+                      "memory": {
+                        "status": "up",
+                        "details": {
+                          "heapUsed": "150MB"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable - One or more components are unhealthy"
+          }
+        },
+        "summary": "Check API health status",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "description": "Create a new user account. A confirmation email will be sent if the email address is valid.",
+        "operationId": "AuthController_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registration request processed. If the email is valid, a confirmation email will be sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register a new user",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/signin": {
+      "post": {
+        "description": "Authenticate user and return access token.",
+        "operationId": "AuthController_signIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignInResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials."
+          }
+        },
+        "summary": "User login",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/signout": {
+      "post": {
+        "description": "Invalidate user session and clear authentication tokens.",
+        "operationId": "AuthController_signOut",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignOutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignOutResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid refresh token."
+          }
+        },
+        "summary": "User logout",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/request-password-reset": {
+      "post": {
+        "description": "Request a password reset. If the email is valid and the account has the necessary permissions, a reset email will be sent.",
+        "operationId": "AuthController_requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request processed. If the email is valid and has permission to reset password, reset instructions will be sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPasswordResetResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request password reset",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "description": "Reset user password using the token received by email.",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetPasswordResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired token."
+          }
+        },
+        "summary": "Reset password",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "description": "Retrieve the profile of the currently authenticated user.",
+        "operationId": "AuthController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/auth/guest": {
+      "get": {
+        "description": "Retrieve the basic information for guest users.",
+        "operationId": "AuthController_getGuest",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get guest user",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "BillMate API",
+    "description": "An open-source solution for managing clients, invoices, and financial tasks.",
+    "version": "0.0.0",
+    "contact": {
+      "name": "BillMate Team",
+      "url": "https://github.com/agachet/billmate-backend",
+      "email": "anthony.gachet@diamondforge.fr"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "SignUpDto": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "string",
+            "description": "First name of the user",
+            "example": "John",
+            "minLength": 1
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Last name of the user",
+            "example": "Doe",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the user",
+            "example": "john.doe@example.com",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password",
+            "example": "NewPassword123",
+            "minLength": 6,
+            "maxLength": 40,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$"
+          }
+        },
+        "required": [
+          "firstname",
+          "lastname",
+          "email",
+          "password"
+        ]
+      },
+      "SignUpResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Registration confirmation message",
+            "example": "User registration successful. Please check your email for confirmation."
+          },
+          "confirmationToken": {
+            "type": "string",
+            "description": "Account confirmation token (only available in development environment)",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "SignInDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "user@example.com",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password",
+            "example": "mySecurePassword123",
+            "minLength": 6,
+            "maxLength": 40
+          },
+          "confirmAccountToken": {
+            "type": "string",
+            "description": "Account confirmation token (only required when validating a new account)",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "SignInResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Authenticated user ID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SignOutDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID of the user to sign out",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SignOutResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Success message",
+            "example": "Successfully signed out"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "RequestPasswordResetDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of the user requesting password reset",
+            "example": "user@example.com",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RequestPasswordResetResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Confirmation message",
+            "example": "Password reset instructions sent to your email"
+          },
+          "resetToken": {
+            "type": "string",
+            "description": "Reset token (only available in development environment)",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "resetPasswordToken": {
+            "type": "string",
+            "description": "Token received by email for password reset",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "password": {
+            "type": "string",
+            "description": "New password (must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number)",
+            "example": "NewPassword123",
+            "minLength": 6,
+            "maxLength": 40,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "Confirm the new password (must match password field)",
+            "example": "NewPassword123",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "resetPasswordToken",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "ResetPasswordResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Success message",
+            "example": "Password successfully reset"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "MeResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User unique identifier",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "john.doe@example.com"
+          },
+          "firstname": {
+            "type": "object",
+            "description": "User first name",
+            "example": "John",
+            "nullable": true
+          },
+          "lastname": {
+            "type": "object",
+            "description": "User last name",
+            "example": "Doe",
+            "nullable": true
+          },
+          "roles": {
+            "description": "User roles",
+            "example": [
+              "USER",
+              "ADMIN",
+              "TESTER"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "modules": {
+            "description": "Accessible modules for the user",
+            "example": [
+              "USER_ACCOUNT_PASSWORD_RECOVERY",
+              "USER_ACCOUNT_CREATION"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "permissions": {
+            "description": "User permissions",
+            "example": [
+              "USER_ACCOUNT_CREATE_OWN",
+              "PASSWORD_RECOVERY_LINK_REQUEST_OWN",
+              "PASSWORD_RECOVERY_RESET_OWN"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Account creation date",
+            "example": "2024-03-06T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "userId",
+          "email",
+          "firstname",
+          "lastname",
+          "roles",
+          "modules",
+          "permissions",
+          "createdAt"
+        ]
+      },
+      "GuestResponseDto": {
+        "type": "object",
+        "properties": {
+          "roles": {
+            "description": "User roles",
+            "example": [
+              "GUEST"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "modules": {
+            "description": "Accessible modules for the guest user",
+            "example": [
+              "USER_ACCOUNT_CREATION",
+              "USER_ACCOUNT_LOGIN"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "permissions": {
+            "description": "Guest user permissions",
+            "example": [
+              "USER_ACCOUNT_CREATE_OWN",
+              "USER_ACCOUNT_LOGIN"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "roles",
+          "modules",
+          "permissions"
+        ]
+      }
+    }
+  }
+}

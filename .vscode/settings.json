@@ -1,0 +1,35 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "prettier.singleQuote": true,
+  "prettier.semi": false,
+  "prettier.trailingComma": "none",
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": false,
+  "prettier.resolveGlobalModules": true,
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#dfb8e6",
+    "activityBar.background": "#dfb8e6",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#8d7f32",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#15202b99",
+    "sash.hoverBorder": "#dfb8e6",
+    "statusBar.background": "#ce93d8",
+    "statusBar.foreground": "#15202b",
+    "statusBarItem.hoverBackground": "#bd6eca",
+    "statusBarItem.remoteBackground": "#ce93d8",
+    "statusBarItem.remoteForeground": "#15202b",
+    "titleBar.activeBackground": "#ce93d8",
+    "titleBar.activeForeground": "#15202b",
+    "titleBar.inactiveBackground": "#ce93d899",
+    "titleBar.inactiveForeground": "#15202b99"
+  },
+  "peacock.color": "#ce93d8"
+}

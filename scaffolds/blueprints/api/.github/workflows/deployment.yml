@@ -1,0 +1,420 @@
+name: Deployment
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., 1.0.0)'
+        required: true
+        type: string
+        default: 'latest'
+  repository_dispatch:
+    types:
+      - deployment
+
+jobs:
+  check-tests:
+    name: Check if tests passed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
+
+      - name: Check test status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Check if tests have passed for this specific commit
+            gh run list --workflow=test.yml --branch=master --status=success --limit=1 --commit=${{ github.sha }}
+            if [ $? -ne 0 ]; then
+              echo "Tests have not passed for commit ${{ github.sha }}. Deployment blocked."
+              exit 1
+            fi
+          fi
+
+      - name: Print last failed test run
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Last 5 test runs:"
+          gh run list --workflow=test.yml --limit=5
+          echo "Detailed logs of the last failed run:"
+          LAST_FAILED_RUN=$(gh run list --workflow=test.yml --status=failure --limit=1 --json databaseId --jq '.[0].databaseId')
+          if [ ! -z "$LAST_FAILED_RUN" ]; then
+            gh run view $LAST_FAILED_RUN --log
+          fi
+
+  create-version-tag:
+    name: Create version tag based on package.json
+    needs: check-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.package-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get package version
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Version from package.json: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check for version bump in commit message
+        id: check-is-version-bump
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Get last commit message
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            echo "Last commit message: $COMMIT_MSG"
+
+            # Check for version bump commit
+            if [[ "$COMMIT_MSG" =~ chore:\ bump\ version\ to ]]; then
+              echo "✅ Version bump commit detected: $COMMIT_MSG"
+              echo "is_version_bump=true" >> $GITHUB_OUTPUT
+            else
+              echo "No version bump detected in commit message"
+              echo "is_version_bump=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            # For workflow_dispatch and repository_dispatch
+            echo "Not a push event, skipping tag creation"
+            echo "is_version_bump=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if version tag exists
+        id: check-tag
+        if: steps.check-is-version-bump.outputs.is_version_bump == 'true'
+        run: |
+          TAG_EXISTS=$(git tag -l "v${{ steps.package-version.outputs.version }}")
+          if [ -z "$TAG_EXISTS" ]; then
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+            echo "Tag v${{ steps.package-version.outputs.version }} does not exist, will create it"
+          else
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+            echo "Tag v${{ steps.package-version.outputs.version }} already exists"
+          fi
+
+      - name: Set Git user
+        if: steps.check-is-version-bump.outputs.is_version_bump == 'true'
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Create tag if it doesn't exist
+        if: steps.check-is-version-bump.outputs.is_version_bump == 'true' && steps.check-tag.outputs.tag_exists == 'false'
+        run: |
+          git tag -a "v${{ steps.package-version.outputs.version }}" -m "Release version ${{ steps.package-version.outputs.version }}"
+          echo "Created tag v${{ steps.package-version.outputs.version }}"
+
+      - name: Push current master to tag
+        if: steps.check-is-version-bump.outputs.is_version_bump == 'true'
+        run: |
+          if [ "${{ steps.check-tag.outputs.tag_exists }}" == "true" ]; then
+            git push origin HEAD:refs/tags/v${{ steps.package-version.outputs.version }} -f
+            echo "Updated existing tag v${{ steps.package-version.outputs.version }} with current master"
+          else
+            git push origin "v${{ steps.package-version.outputs.version }}"
+            echo "Pushed new tag v${{ steps.package-version.outputs.version }}"
+          fi
+
+  docker-push:
+    name: Push Docker image to GHCR
+    needs: [check-tests, create-version-tag]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Always get package version directly from package.json to ensure consistency
+      - name: Get package version directly
+        id: package-version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Version from package.json: $PKG_VERSION"
+          echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ steps.package-version.outputs.version }}
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Show tags before push
+        run: |
+          echo "Tags that will be applied:"
+          echo "${{ steps.meta.outputs.tags }}"
+          echo "Current images and their tags:"
+          docker images ghcr.io/${{ github.repository }} --format "{{.ID}} {{.Repository}}:{{.Tag}}"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Show tags after push
+        run: |
+          echo "Images and their tags after push:"
+          docker images ghcr.io/${{ github.repository }} --format "{{.ID}} {{.Tag}}"
+
+  deploy-to-nas:
+    name: Deploy to NAS
+    needs: [docker-push]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Always get package version directly from package.json to ensure consistency
+      - name: Get package version directly
+        id: package-version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Version from package.json: $PKG_VERSION"
+          echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CI_DEPLOY_NAS_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo -e "Host cinas-ext\n  HostName ${{ secrets.NAS_HOST }}\n  Port ${{ secrets.NAS_PORT }}\n  User ${{ secrets.NAS_USER }}\n  IdentityFile ~/.ssh/id_rsa\n  StrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Setup NAS directories
+        run: |
+          # Create base directory with proper permissions
+          ssh cinas-ext "mkdir -p ${{ secrets.NAS_BACKEND_PATH }} && chmod 755 ${{ secrets.NAS_BACKEND_PATH }}"
+
+          # Create subdirectories with proper permissions
+          ssh cinas-ext "mkdir -p ${{ secrets.NAS_BACKEND_PATH }}/{logs,prisma,scripts} && chmod 755 ${{ secrets.NAS_BACKEND_PATH }}/{logs,prisma,scripts}"
+
+      - name: Check Docker version on NAS
+        run: |
+          DOCKER_VERSION=$(ssh cinas-ext '/usr/local/bin/docker --version')
+          echo "Docker version on NAS: $DOCKER_VERSION"
+          if ! ssh cinas-ext '/usr/local/bin/docker info >/dev/null 2>&1'; then
+            echo "Docker daemon is not running on NAS"
+            exit 1
+          fi
+
+      - name: Deploy backend container
+        run: |
+          # Function to check SSH command status
+          check_ssh_status() {
+            if [ $? -ne 0 ]; then
+              echo "Error executing SSH command: $1"
+              echo "Last command failed: $2"
+              exit 1
+            fi
+          }
+
+          # Set version variables once at the beginning
+          REPO="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          # Always use package.json version directly to ensure consistency
+          VERSION="${{ steps.package-version.outputs.version }}"
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "Using repository: ${REPO}, version: ${VERSION}, SHA: ${SHA_SHORT}"
+
+          # Fail if version is empty (critical error)
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: Version is empty! This is a critical error."
+            echo "Package.json might be invalid or not accessible."
+            exit 1
+          fi
+
+          # Debug package.json content
+          echo "Package.json content:"
+          cat package.json | grep version
+
+          # Update local docker-compose.yml to use version tag
+          echo "Updating local docker-compose.yml..."
+          sed -i.bak "s|image:.*|image: ghcr.io/${REPO}:${VERSION}|" docker-compose.yml
+          echo "Updated docker-compose.yml content:"
+          cat docker-compose.yml
+
+          # Create network if it doesn't exist
+          echo "Creating network if it doesn't exist..."
+          ssh cinas-ext "/usr/local/bin/docker network inspect saasforge-network >/dev/null 2>&1 || /usr/local/bin/docker network create saasforge-network"
+          check_ssh_status "Network creation" "docker network inspect/create"
+
+          # Backup current docker-compose.yml if it exists
+          echo "Backing up docker-compose.yml..."
+          ssh cinas-ext "if [ -f ${{ secrets.NAS_BACKEND_PATH }}/docker-compose.yml ]; then cp ${{ secrets.NAS_BACKEND_PATH }}/docker-compose.yml ${{ secrets.NAS_BACKEND_PATH }}/docker-compose.yml.backup; fi"
+          check_ssh_status "Backup creation" "cp docker-compose.yml"
+
+          # Copy docker-compose.yml
+          echo "Copying docker-compose.yml to NAS..."
+          cat docker-compose.yml | ssh cinas-ext "cat > ${{ secrets.NAS_BACKEND_PATH }}/docker-compose.yml"
+          check_ssh_status "File copy" "cat docker-compose.yml"
+
+          # Verify docker-compose.yml content on NAS
+          echo "Verifying docker-compose.yml content on NAS..."
+          ssh cinas-ext "cat ${{ secrets.NAS_BACKEND_PATH }}/docker-compose.yml"
+          check_ssh_status "File verification" "cat docker-compose.yml"
+
+          # Remove port exposure in docker-compose.yml
+          echo "Removing port exposure..."
+          ssh cinas-ext "sed -i '/ports:/,/3500/d' ${{ secrets.NAS_BACKEND_PATH }}/docker-compose.yml"
+          check_ssh_status "Port removal" "sed ports"
+
+          # Create .env file from secrets
+          echo "Creating .env file..."
+          ssh cinas-ext "cat <<EOF > ${{ secrets.NAS_BACKEND_PATH }}/.env
+          # Server Configuration
+          PORT=\"3500\"
+          NODE_ENV=\"production\"
+
+          # Database Configuration
+          DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"
+          DIRECT_URL=\"${{ secrets.DIRECT_URL }}\"
+
+          # API Configuration
+          API_PREFIX=\"/api\"
+
+          # JWT Configuration
+          JWT_AUTH_EXPIRES_IN=\"15m\"
+          JWT_REFRESH_EXPIRES_IN=\"7d\"
+          JWT_CREATE_ACCOUNT_EXPIRES_IN=\"24h\"
+          JWT_RESET_PASSWORD_EXPIRES_IN=\"1h\"
+          JWT_SECRET_AUTH=\"${{ secrets.JWT_SECRET_AUTH }}\"
+          JWT_SECRET_REFRESH=\"${{ secrets.JWT_SECRET_REFRESH }}\"
+          JWT_SECRET_CONFIRM_ACCOUNT=\"${{ secrets.JWT_SECRET_CONFIRM_ACCOUNT }}\"
+          JWT_SECRET_RESET_PASSWORD=\"${{ secrets.JWT_SECRET_RESET_PASSWORD }}\"
+
+          # Log Configuration
+          LOG_LEVEL=\"info\"
+          LOG_DIR=\"logs\"
+          EOF"
+          check_ssh_status "Env file creation" "cat > .env"
+
+          # Check if deployment is possible
+          echo "Checking if deployment is possible..."
+          if ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && /usr/local/bin/docker-compose ps | grep -q 'backend'"; then
+            echo "Backend is already running. Proceeding with deployment..."
+          else
+            echo "No backend is currently running. Proceeding with fresh deployment..."
+          fi
+
+          # Set up environment variables
+          echo "Setting up environment variables on NAS..."
+          ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && export REPO=\"${REPO}\" && export VERSION=\"${VERSION}\""
+          check_ssh_status "Environment setup" "Setting environment variables"
+
+          # Stop the current container
+          echo "Stopping current container..."
+          ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && /usr/local/bin/docker-compose down"
+          check_ssh_status "Container shutdown" "docker-compose down"
+
+          # Check docker-compose.yml for validity
+          echo "Checking docker-compose.yml for validity..."
+          ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && cat docker-compose.yml && /usr/local/bin/docker-compose config"
+          check_ssh_status "Docker compose validation" "docker-compose config"
+
+          # Before starting container, ensure we have the latest image version
+          echo "Ensuring we have the latest image version..."
+          ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && /usr/local/bin/docker pull ghcr.io/${REPO}:${VERSION}"
+          check_ssh_status "Image pull" "docker pull"
+
+          # Start the new container
+          echo "Starting new container..."
+          ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && /usr/local/bin/docker-compose up -d"
+          check_ssh_status "Container startup" "docker-compose up -d"
+
+          # Clean up containers and unused images
+          echo "Cleaning up unused containers and images..."
+          ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && \
+            echo 'Pruning unused containers...' && \
+            /usr/local/bin/docker container prune -f && \
+            echo 'Cleaning up images from repository ${REPO} except the current version ${VERSION}...' && \
+            CURRENT_IMAGE_ID=\$(/usr/local/bin/docker images ghcr.io/${REPO}:${VERSION} -q) && \
+            if [ ! -z \"\$CURRENT_IMAGE_ID\" ]; then \
+              echo \"Keeping current image ID: \$CURRENT_IMAGE_ID\" && \
+              ALL_REPO_IMAGES=\$(/usr/local/bin/docker images ghcr.io/${REPO} -q) && \
+              for IMG_ID in \$ALL_REPO_IMAGES; do \
+                if [ \"\$IMG_ID\" != \"\$CURRENT_IMAGE_ID\" ]; then \
+                  echo \"Removing old image: \$IMG_ID\" && \
+                  /usr/local/bin/docker rmi -f \$IMG_ID || true; \
+                fi; \
+              done && \
+              echo 'Pruning any remaining dangling images...' && \
+              /usr/local/bin/docker image prune -f; \
+            else \
+              echo \"Warning: Current image ID not found. Skipping cleanup.\"; \
+            fi"
+          check_ssh_status "Image cleanup" "docker image cleanup"
+
+          # Wait for container to be healthy
+          echo "Waiting for container to be healthy..."
+          for i in {1..30}; do
+            if ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && /usr/local/bin/docker-compose ps | grep -q 'backend.*Up'"; then
+              echo "Container is healthy!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Container failed to become healthy within 30 seconds"
+              ssh cinas-ext "cd ${{ secrets.NAS_BACKEND_PATH }} && /usr/local/bin/docker-compose logs backend"
+              exit 1
+            fi
+            sleep 1
+          done
+
+          # Setup log rotation (optional)
+          echo "Setting up log rotation..."
+          if ssh cinas-ext "which logrotate >/dev/null 2>&1"; then
+            # Create logrotate config
+            ssh cinas-ext "cat <<EOF > ${{ secrets.NAS_BACKEND_PATH }}/scripts/logrotate.conf
+            ${{ secrets.NAS_BACKEND_PATH }}/logs/*.log {
+                daily
+                rotate 7
+                compress
+                delaycompress
+                missingok
+                notifempty
+                create 0640 ${{ secrets.NAS_USER }} ${{ secrets.NAS_USER }}
+            }
+            EOF"
+
+            # Try to setup crontab, but don't fail if it doesn't work
+            if ssh cinas-ext "crontab -l >/dev/null 2>&1"; then
+              ssh cinas-ext "crontab -l | grep -q 'logrotate' || (crontab -l 2>/dev/null; echo '0 0 * * * /usr/sbin/logrotate ${{ secrets.NAS_BACKEND_PATH }}/scripts/logrotate.conf') | crontab -"
+            else
+              echo "Warning: Could not access crontab. Log rotation will need to be configured manually."
+            fi
+          else
+            echo "Warning: logrotate is not installed. Log rotation will need to be configured manually."
+          fi

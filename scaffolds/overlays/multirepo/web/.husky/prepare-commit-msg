@@ -1,0 +1,27 @@
+# Check if we're on a release candidate branch (rc-*)
+current_branch=$(git symbolic-ref --short HEAD)
+if [[ ! "$current_branch" =~ ^rc- ]]; then
+  exit 0
+fi
+
+# Skip version bump prompt for WIP commits
+if grep -q "WIP" "$1"; then
+  exit 0
+fi
+
+# Check if we're in a merge commit or rebase
+source_type=${2:-}
+if [ "$source_type" = "merge" ] || [ "$source_type" = "message" ]; then
+  exit 0
+fi
+
+# Get current version
+current_version=$(node -p "require('./package.json').version")
+
+# Informative message for RC branches
+echo ""
+echo "Release candidate branch detected ($current_branch) with current package version $current_version."
+echo "A tag update process will be proposed at the branch push, since this is a release candidate branch."
+
+# No further action in prepare-commit-msg, version management will be handled in pre-push
+exit 0

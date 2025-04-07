@@ -1,0 +1,34 @@
+services:
+  db-test:
+    image: postgres:16-alpine
+    container_name: saasforge-db-test
+    restart: 'no' # No need for auto-restart for tests
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+      # Config optimized for tests
+      POSTGRES_INITDB_ARGS: '--nosync'
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRESQL_SHARED_BUFFERS: 128MB
+      POSTGRESQL_EFFECTIVE_CACHE_SIZE: 384MB
+      POSTGRESQL_MAINTENANCE_WORK_MEM: 64MB
+      POSTGRESQL_CHECKPOINT_COMPLETION_TARGET: 0.7
+      POSTGRESQL_MAX_WAL_SIZE: 1GB
+      POSTGRESQL_MIN_WAL_SIZE: 80MB
+    command: >
+      postgres -c shared_buffers=128MB -c effective_cache_size=384MB -c maintenance_work_mem=64MB -c checkpoint_completion_target=0.7 -c max_wal_size=1GB -c min_wal_size=80MB -c fsync=off -c
+      synchronous_commit=off -c full_page_writes=off
+    ports:
+      - '5433:5432'
+    tmpfs:
+      - /var/lib/postgresql/data:rw,noexec,nosuid,size=500m # Use tmpfs instead of a volume
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d test_db']
+      interval: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  db-test-data:
+    driver: local

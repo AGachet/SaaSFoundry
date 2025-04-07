@@ -1,0 +1,30 @@
+services:
+  ###############
+  # Backend API #
+  ###############
+  backend:
+    image: saasfoundry-api
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: saasfoundry-api
+    env_file:
+      - ./.env
+    ports:
+      - '${BACKEND_PORT:-3500}:3500'
+    volumes:
+      - ./logs:/app/logs
+      - ./scripts:/app/scripts
+    restart: unless-stopped
+    networks:
+      - saasfoundry-network
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3500/api/health']
+      interval: 30s
+      timeout: 3s
+      retries: 1
+      start_period: 30s
+
+networks:
+  saasforge-network:
+    external: true

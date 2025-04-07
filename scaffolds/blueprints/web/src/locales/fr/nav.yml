@@ -1,0 +1,15 @@
+main-navigation:
+  tk_dashboard_: 'Tableau de bord'
+  tk_features-group-1_: 'Groupe de fonctionnalités 1'
+  tk_features-group-2_: 'Groupe de fonctionnalités 2'
+  tk_features-group-3_: 'Groupe de fonctionnalités 3'
+
+  tk_feature-1_: 'Fonctionnalité 1'
+  tk_feature-2_: 'Fonctionnalité 2'
+  tk_feature-3_: 'Fonctionnalité 3'
+  tk_feature-4_: 'Fonctionnalité 4'
+  tk_feature-5_: 'Fonctionnalité 5'
+  tk_feature-6_: 'Fonctionnalité 6'
+  tk_feature-7_: 'Fonctionnalité 7'
+  tk_feature-8_: 'Fonctionnalité 8'
+  tk_feature-9_: 'Fonctionnalité 9'

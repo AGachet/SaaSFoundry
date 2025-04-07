@@ -1,0 +1,21 @@
+version:
+  free: 'Free version'
+  premium: 'Premium version'
+
+user:
+  tk_firstName_: First name
+  tk_firstNamePlaceholder_: John
+  tk_lastName_: Last name
+  tk_lastNamePlaceholder_: Doe
+  tk_email_: Email
+  tk_emailPlaceholder_: john.doe@saasfoundry.com
+
+loading:
+  tk_loadingCreate_: 'Creating...'
+  tk_loadingSignin_: 'Signing in...'
+  tk_loadingSend_: 'Sending...'
+  tk_loadingUpdate_: 'Updating...'
+  tk_loading_: 'Loading...'
+
+other:
+  tk_or_: 'or'

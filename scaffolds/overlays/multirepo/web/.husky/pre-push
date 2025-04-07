@@ -1,0 +1,44 @@
+# Get the current branch name
+current_branch=$(git symbolic-ref --short HEAD)
+echo "Preparing to push branch: $current_branch"
+
+# Get remote and URL information
+remote="$1"
+url="$2"
+
+# Check if we're pushing a RC branch
+if [[ "$current_branch" =~ ^rc- ]]; then
+  echo "Release candidate branch detected: $current_branch"
+  echo "Running version management script..."
+
+  # Use npm to run the version management script
+  # This ensures a proper interactive terminal environment
+  npm run version:manage
+
+  # Check exit code
+  if [ $? -ne 0 ]; then
+    echo "❌ Version management failed or was aborted."
+    exit 1
+  fi
+
+  echo "✅ Version management completed successfully."
+else
+  # Not a RC branch
+  echo "This is not a release candidate branch."
+  echo "NOTE: To use automatic version and tag management, name your branches with 'rc-' prefix"
+  echo "      (e.g., 'rc-feature', 'rc-bugfix', etc.)"
+
+  # Optional: Check for WIP commits before pushing
+  if git log @{u}..HEAD --pretty=format:"%s" | grep -q "WIP"; then
+    echo "WARNING: Your branch contains WIP commits."
+    read -p "Continue pushing with WIP commits? (y/n) " continue_wip < /dev/tty
+    if [ "$continue_wip" != "y" ]; then
+      echo "Push aborted."
+      exit 1
+    fi
+  fi
+fi
+
+# All checks passed
+echo "All pre-push checks passed. Proceeding with push..."
+exit 0

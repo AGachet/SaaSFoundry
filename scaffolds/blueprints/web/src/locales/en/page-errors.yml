@@ -1,0 +1,4 @@
+404-not-found:
+  title: 'Oops! This page is not found'
+  description: 'The page you are looking for seems to have disappeared into the digital void.'
+  button: 'Return to the safe place'
