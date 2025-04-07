@@ -455,6 +455,12 @@ test.describe('Authentication Flow', () => {
   })
 
   test('should not initialize guest access when logged in', async ({ page }) => {
+    // Clear any existing auth data
+    await page.evaluate(() => {
+      localStorage.removeItem('authMe')
+      localStorage.removeItem('guestAccess')
+    })
+
     /**
      * Mock the user endpoint
      */

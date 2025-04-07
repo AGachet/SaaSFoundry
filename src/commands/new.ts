@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import fs from 'fs'
 import { copy } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
 import inquirer from 'inquirer'
@@ -257,7 +258,7 @@ async function createApiApp({ isMonorepo, projectName, projectDescription, backe
     packageJson.repository.url = backendRepoUrl || 'https://github.com/agachet/saasfoundry.git'
     packageJson.keywords = [projectName, 'saasfoundry', 'backend', 'nest', 'prisma']
     await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
-    await exec(`cd ${apiPath} && npm install > /dev/null 2>&1`)
+    await exec(`npm install --prefix ${apiPath} > /dev/null 2>&1`)
 
     // Update .env
     const envPath = `${apiPath}/.env`
@@ -272,13 +273,21 @@ async function createApiApp({ isMonorepo, projectName, projectDescription, backe
       await writeFile(envPath, envContent)
     }
 
+    // Update Docker network name in docker-compose.yml
+    const dockerComposePath = `${apiPath}/docker-compose.yml`
+    if (await fileExists(dockerComposePath)) {
+      let dockerComposeContent = await readFile(dockerComposePath, 'utf8')
+      dockerComposeContent = dockerComposeContent.replace(/saasfoundry-network/g, `${projectName}-network`).replace(/saasfoundry-api/g, `${projectName}-api`)
+      await writeFile(dockerComposePath, dockerComposeContent)
+    }
+
     // Initialize Git repository
     if (!isMonorepo) {
       await exec(`git init ${apiPath} > /dev/null 2>&1`)
-      await exec(`git checkout -b ${mainBranch} > /dev/null 2>&1`)
-      if (backendRepoUrl) await exec(`git remote add origin ${backendRepoUrl} > /dev/null 2>&1`)
-      await exec(`git add . > /dev/null 2>&1`)
-      await exec(`git commit -m "Initial commit" > /dev/null 2>&1`)
+      await exec(`git -C ${apiPath} checkout -b ${mainBranch} > /dev/null 2>&1`)
+      if (backendRepoUrl) await exec(`git -C ${apiPath} remote add origin ${backendRepoUrl} > /dev/null 2>&1`)
+      await exec(`git -C ${apiPath} add . > /dev/null 2>&1`)
+      await exec(`git -C ${apiPath} commit -m "Initial commit" > /dev/null 2>&1`)
     }
 
     return true
@@ -336,15 +345,23 @@ async function createWebApp({ isMonorepo, projectName, projectDescription, front
     packageJson.repository.url = frontendRepoUrl || 'https://github.com/agachet/saasfoundry.git'
     packageJson.keywords = [projectName, 'saasfoundry', 'backend', 'nest', 'prisma']
     await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
-    await exec(`cd ${webPath} && npm install > /dev/null 2>&1`)
+    await exec(`npm install --prefix ${webPath} > /dev/null 2>&1`)
+
+    // Update Docker network name in docker-compose.yml
+    const dockerComposePath = `${webPath}/docker-compose.yml`
+    if (await fileExists(dockerComposePath)) {
+      let dockerComposeContent = await readFile(dockerComposePath, 'utf8')
+      dockerComposeContent = dockerComposeContent.replace(/saasfoundry-network/g, `${projectName}-network`).replace(/saasfoundry-web/g, `${projectName}-web`)
+      await writeFile(dockerComposePath, dockerComposeContent)
+    }
 
     // Initialize Git repository
     if (!isMonorepo) {
       await exec(`git init ${webPath} > /dev/null 2>&1`)
-      await exec(`git checkout -b ${mainBranch} > /dev/null 2>&1`)
-      if (frontendRepoUrl) await exec(`git remote add origin ${frontendRepoUrl} > /dev/null 2>&1`)
-      await exec(`git add . > /dev/null 2>&1`)
-      await exec(`git commit -m "Initial commit" > /dev/null 2>&1`)
+      await exec(`git -C ${webPath} checkout -b ${mainBranch} > /dev/null 2>&1`)
+      if (frontendRepoUrl) await exec(`git -C ${webPath} remote add origin ${frontendRepoUrl} > /dev/null 2>&1`)
+      await exec(`git -C ${webPath} add . > /dev/null 2>&1`)
+      await exec(`git -C ${webPath} commit -m "Initial commit" > /dev/null 2>&1`)
     }
 
     return true
@@ -368,7 +385,7 @@ async function initAndStartDb(projectName: string, dbSetup: 'docker' | 'credenti
     // Initialize the database with required configurations
     spinner.text = 'Configuring database...'
     const apiPath = isMonorepo ? 'apps/api' : `apps/${projectName}-api`
-    await exec(`cd ${apiPath} && npm run db:update:dev init_data_base_config -- --wf --wt --wds 2> /dev/null || npm run db:update:dev init_data_base_config -- --wf --wt --wds`)
+    await exec(`npm run db:update:dev init_data_base_config --prefix ${apiPath} -- --wf --wt --wds 2> /dev/null || npm run db:update:dev init_data_base_config --prefix ${apiPath} -- --wf --wt --wds`)
 
     return true
   } catch (error) {
@@ -392,7 +409,7 @@ async function waitForServer(url: string, timeout: number = 30000): Promise<void
       if (response.ok) {
         return
       }
-    } catch (error) {
+    } catch {
       // Server not ready yet, continue waiting
     }
     await new Promise((resolve) => setTimeout(resolve, checkInterval))
@@ -402,12 +419,21 @@ async function waitForServer(url: string, timeout: number = 30000): Promise<void
 }
 
 /**
- * Opens a new terminal tab or window with the specified command
+ * Opens a new terminal tab or window with contextual directory and optional command
+ * @param directory The directory to open the terminal in
+ * @param command Optional command to run after changing to the directory
+ * @param description Description for the spinner (e.g., "Opening terminal..." or "Starting backend...")
+ * @returns Promise<boolean> indicating success or failure
  */
-async function openNewTerminal(directory: string, command: string): Promise<boolean> {
+async function openTerminal(directory: string, options?: { command?: string; description?: string }): Promise<boolean> {
+  const { command, description } = options || {}
+  const spinnerText = description || (command ? `Running command in terminal...` : `Opening terminal...`)
+  const spinner = ora(spinnerText).start()
+
   try {
     // Get the absolute path
     const absolutePath = `${process.cwd()}/${directory}`
+    let success = false
 
     // Use different commands based on the operating system
     if (process.platform === 'darwin') {
@@ -422,17 +448,19 @@ async function openNewTerminal(directory: string, command: string): Promise<bool
             tell current window
               create tab with default profile
               tell current session
-                write text "cd ${absolutePath} && ${command}"
+                write text "cd ${absolutePath}${command ? ` && ${command}` : ''}"
               end tell
             end tell
           end tell
         `
         await exec(`osascript -e '${script}'`)
+        success = true
       } catch {
         // iTerm2 not found or error, use Terminal.app
         await exec(
-          `osascript -e 'tell application "Terminal" to tell application "System Events" to keystroke "t" using {command down}' -e 'tell application "Terminal" to do script "cd ${absolutePath} && ${command}" in front window'`
+          `osascript -e 'tell application "Terminal" to tell application "System Events" to keystroke "t" using {command down}' -e 'tell application "Terminal" to do script "cd ${absolutePath}${command ? ` && ${command}` : ''}" in front window'`
         )
+        success = true
       }
     } else if (process.platform === 'win32') {
       // Windows - check for Windows Terminal
@@ -440,33 +468,62 @@ async function openNewTerminal(directory: string, command: string): Promise<bool
 
       if (hasWindowsTerminal) {
         // Windows Terminal
-        await exec(`wt.exe -w 0 nt -d "${absolutePath}" cmd /k ${command}`)
+        if (command) {
+          await exec(`wt.exe -w 0 nt -d "${absolutePath}" cmd /k ${command}`)
+        } else {
+          await exec(`wt.exe -w 0 nt -d "${absolutePath}"`)
+        }
+        success = true
       } else {
         // Fallback to cmd
-        await exec(`start cmd.exe /K "cd ${absolutePath} && ${command}"`)
+        await exec(`start cmd.exe /K "cd ${absolutePath}${command ? ` && ${command}` : ''}"`)
+        success = true
       }
     } else {
       // Linux - try to detect current terminal
       if (process.env.TERM_PROGRAM === 'gnome-terminal') {
-        await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash -c "${command}; bash"`)
+        if (command) {
+          await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash -c "${command}; bash"`)
+        } else {
+          await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash`)
+        }
+        success = true
       } else if (process.env.TERM_PROGRAM === 'konsole') {
-        await exec(`konsole --new-tab --workdir "${absolutePath}" -e bash -c "${command}; bash"`)
+        if (command) {
+          await exec(`konsole --new-tab --workdir "${absolutePath}" -e bash -c "${command}; bash"`)
+        } else {
+          await exec(`konsole --new-tab --workdir "${absolutePath}"`)
+        }
+        success = true
       } else {
         // Fallback to common terminals
-        await exec(
-          `gnome-terminal --tab --working-directory="${absolutePath}" -- bash -c "${command}; bash" || konsole --new-tab --workdir "${absolutePath}" -e bash -c "${command}; bash" || xterm -e "cd ${absolutePath} && ${command}; bash"`
-        )
+        if (command) {
+          await exec(
+            `gnome-terminal --tab --working-directory="${absolutePath}" -- bash -c "${command}; bash" || konsole --new-tab --workdir "${absolutePath}" -e bash -c "${command}; bash" || xterm -e "cd ${absolutePath} && ${command}; bash"`
+          )
+        } else {
+          await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash || konsole --new-tab --workdir "${absolutePath}" || xterm -e "cd ${absolutePath} && bash"`)
+        }
+        success = true
       }
     }
-    return true
+
+    if (success) {
+      spinner.succeed(chalk.green(command ? `Command started in new terminal tab` : `Terminal opened successfully`))
+    } else {
+      spinner.fail(chalk.red(`Failed to open terminal`))
+    }
+
+    return success
   } catch (error) {
-    console.error('Failed to open new terminal', error)
+    spinner.fail(chalk.red(`Failed to open terminal`))
+    console.error('Failed to open terminal', error)
     return false
   }
 }
 
 /**
- * Starts the backend server, either in the current terminal or in a new terminal tab
+ * Starts the backend server in a new terminal tab
  */
 async function startBackend(projectName: string, isMonorepo: boolean, newTerminal: boolean = false): Promise<void> {
   const apiPath = isMonorepo ? 'apps/api' : `apps/${projectName}-api`
@@ -477,21 +534,25 @@ async function startBackend(projectName: string, isMonorepo: boolean, newTermina
     return
   }
 
-  // Start in new terminal
-  const backendSpinner = ora('Starting backend in new terminal...').start()
   try {
-    // Open a new terminal and run the backend
-    const success = await openNewTerminal(apiPath, 'npm run dev')
+    const success = await openTerminal(apiPath, {
+      command: 'npm run dev',
+      description: 'Starting backend in new terminal...'
+    })
 
-    if (success) backendSpinner.succeed(chalk.green('Backend started in new terminal tab'))
-    else backendSpinner.fail(chalk.red('Failed to start backend in new terminal tab'))
+    if (!success) {
+      console.error('Failed to start backend in new terminal tab')
+      process.exit(1)
+    }
   } catch (error) {
-    backendSpinner.fail(chalk.red('Failed to start backend in new terminal tab'))
-    console.error(error)
+    console.error('Failed to start backend in new terminal tab', error)
     process.exit(1)
   }
 }
 
+/**
+ * Starts the frontend server in a new terminal tab
+ */
 async function startFrontend(projectName: string, isMonorepo: boolean, newTerminal: boolean = false): Promise<void> {
   const webPath = isMonorepo ? 'apps/web' : `apps/${projectName}-web`
 
@@ -501,18 +562,31 @@ async function startFrontend(projectName: string, isMonorepo: boolean, newTermin
     return
   }
 
-  // Start in new terminal
-  const frontendSpinner = ora('Starting frontend in new terminal...').start()
   try {
-    // Open a new terminal and run the frontend
-    const success = await openNewTerminal(webPath, 'npm run dev')
+    const success = await openTerminal(webPath, {
+      command: 'npm run dev',
+      description: 'Starting frontend in new terminal...'
+    })
 
-    if (success) frontendSpinner.succeed(chalk.green('Frontend started in new terminal tab'))
-    else frontendSpinner.fail(chalk.red('Failed to start frontend in new terminal tab'))
+    if (!success) {
+      console.error('Failed to start frontend in new terminal tab')
+      process.exit(1)
+    }
   } catch (error) {
-    frontendSpinner.fail(chalk.red('Failed to start frontend in new terminal tab'))
-    console.error(error)
+    console.error('Failed to start frontend in new terminal tab', error)
     process.exit(1)
+  }
+}
+
+/**
+ * Check if a file exists
+ */
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filePath, fs.constants.F_OK)
+    return true
+  } catch {
+    return false
   }
 }
 
@@ -648,9 +722,9 @@ export async function newCommand() {
             name: 'startApps',
             message: 'Do you want to start apps?',
             choices: [
+              { name: 'Yes, start all', value: 'all' },
               { name: 'Yes, only backend', value: 'backend' },
               { name: 'Yes, only frontend', value: 'frontend' },
-              { name: 'Yes, start all', value: 'all' },
               { name: "No, I'll do it myself", value: 'none' }
             ],
             default: 'backend'
@@ -659,6 +733,18 @@ export async function newCommand() {
 
         if (startApps === 'backend' || startApps === 'all') await startBackend(startProjectAnswers.projectName, startProjectAnswers.isMonorepo, true)
         if (startApps === 'frontend' || startApps === 'all') await startFrontend(startProjectAnswers.projectName, startProjectAnswers.isMonorepo, true)
+
+        // If user didn't choose to start the backend, open a contextualized terminal for it
+        if (startApps !== 'backend' && startApps !== 'all') {
+          const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
+          await openTerminal(apiPath, { description: 'Opening terminal for backend...' })
+        }
+
+        // If user didn't choose to start the frontend, open a contextualized terminal for it
+        if (startApps !== 'frontend' && startApps !== 'all') {
+          const webPath = startProjectAnswers.isMonorepo ? 'apps/web' : `apps/${startProjectAnswers.projectName}-web`
+          await openTerminal(webPath, { description: 'Opening terminal for frontend...' })
+        }
 
         // Open browser with API docs if backend is started
         if (startApps === 'backend' || startApps === 'all') {
@@ -669,7 +755,7 @@ export async function newCommand() {
             console.log(chalk.blue('Opening API documentation in browser...'))
             const openCommand = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'
             await exec(`${openCommand} http://localhost:3500/api/docs`)
-          } catch (error) {
+          } catch {
             console.warn(chalk.yellow('Could not open browser automatically. Please navigate to http://localhost:3500/api/docs'))
           }
         }
@@ -683,7 +769,7 @@ export async function newCommand() {
             console.log(chalk.blue('Opening frontend application in browser...'))
             const openCommand = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'
             await exec(`${openCommand} http://localhost:5173`)
-          } catch (error) {
+          } catch {
             console.warn(chalk.yellow('Could not open browser automatically. Please navigate to http://localhost:5173'))
           }
         }
@@ -691,6 +777,33 @@ export async function newCommand() {
         dbSpinner.fail(chalk.red('Failed to start database'))
         console.error(error)
       }
+    } else {
+      // User doesn't want to start DB, let's open terminals for both apps
+      const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
+      const webPath = startProjectAnswers.isMonorepo ? 'apps/web' : `apps/${startProjectAnswers.projectName}-web`
+
+      console.log(chalk.blue('Opening terminals for your project...'))
+
+      await openTerminal(apiPath, { description: 'Opening terminal for backend...' })
+      await openTerminal(webPath, { description: 'Opening terminal for frontend...' })
     }
+  } else {
+    // User chose manual DB setup, let's open terminals for both apps
+    const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
+    const webPath = startProjectAnswers.isMonorepo ? 'apps/web' : `apps/${startProjectAnswers.projectName}-web`
+
+    console.log(chalk.blue('Opening terminals for your project...'))
+
+    await openTerminal(apiPath, { description: 'Opening terminal for backend...' })
+    await openTerminal(webPath, { description: 'Opening terminal for frontend...' })
   }
+
+  // Display success message with project name
+  console.log('\n')
+  console.log(chalk.green('='.repeat(80)))
+  console.log(chalk.green.bold(`🚀 Congratulations! Your project "${startProjectAnswers.projectName}" has been successfully set up by SaaSFoundry!`))
+  console.log(chalk.green.bold(`🌍 It's now ready to become the next SaaS that will conquer the world!`))
+  console.log(chalk.green.bold(`🧠 "What are we going to do tonight, Brain?" "The same thing we do every night, Pinky - try to take over the world!"`))
+  console.log(chalk.green('='.repeat(80)))
+  console.log('\n')
 }

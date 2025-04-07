@@ -26,5 +26,5 @@ services:
       start_period: 30s
 
 networks:
-  saasforge-network:
+  saasfoundry-network:
     external: true

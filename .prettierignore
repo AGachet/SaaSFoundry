@@ -1,0 +1,21 @@
+# Build outputs
+dist/
+build/
+.next/
+
+# Dependencies
+node_modules/
+
+# Scaffolds - templates for project generation
+scaffolds/
+
+# Package files - often formatted differently or automatically generated
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Other files
+.git
+.DS_Store
+coverage/
+*.log
