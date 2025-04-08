@@ -36,7 +36,7 @@
     "db:init:test": "./scripts/init-test-db.sh",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
     "prepare": "husky",
-    "postinstall": "if [ \"$NODE_ENV\" = \"development\" ] && [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi"
+    "postinstall": "if [ \"$CI\" != \"true\" ] && [ \"$HUSKY\" != \"0\" ]; then npx husky install && find .husky -type f -exec chmod +x {} + && if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi; fi"
   },
   "keywords": [
     "saasfoundry",
