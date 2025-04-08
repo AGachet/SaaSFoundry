@@ -1,10 +1,14 @@
-# 🚀 SaaSFoundry
+# 🚀 SaaSFoundry - Integrated SaaS Development Platform
 
 <div align="center">
 
-[![SaaSFoundry](https://img.shields.io/badge/SaaSFoundry-2D3748?style=for-the-badge&logo=react&logoColor=white)](https://saasfoundry.diamondforge.fr)
 [![Open Source](https://img.shields.io/badge/Open%20Source-2D3748?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AGachet/saasfoundry)
 [![License](https://img.shields.io/badge/License-MIT-2D3748?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 </div>
 
@@ -15,18 +19,21 @@
 
 ## 🌟 What is SaaSFoundry?
 
-SaaSFoundry is a comprehensive, production-ready boilerplate for building modern SaaS applications. Born from the development of [BillMate Backend](https://github.com/AGachet/billmate-backend) and
+SaaSFoundry is a comprehensive, production-ready development platform for building modern SaaS applications. Far beyond a simple boilerplate, it's a complete ecosystem with CLI tools, automated
+workflows, and integrated best practices. Born from the development of [BillMate Backend](https://github.com/AGachet/billmate-backend) and
 [BillMate Frontend](https://github.com/AGachet/billmate-frontend), this open-source project provides a robust foundation for startups, freelancers, and developers looking to create scalable, secure,
 and maintainable SaaS solutions in a TypeScript environment.
 
 ### 🎯 Key Features
 
-- **Full-Stack Architecture**
+- **Full-Stack Development Platform**
 
-  - [NestJS Backend](apps/api/README.md) with modular design
-  - [React Frontend](apps/web/README.md) with optimized performance
+  - [NestJS Backend](scaffolds/blueprints/api/README.md) with modular design
+  - [React Frontend](scaffolds/blueprints/web/README.md) with optimized performance
   - Docker containerization
   - Automated deployment workflows
+  - CLI-based project configuration and scaffolding
+  - End-to-end testing infrastructure with auto-mounted databases
 
 - **Security First**
 
@@ -48,9 +55,59 @@ and maintainable SaaS solutions in a TypeScript environment.
   - Health monitoring
   - Logging and error tracking
 
+## 🔧 Prerequisites
+
+To fully leverage SaaSFoundry's capabilities, the following tools are strongly recommended:
+
+### 🐳 Docker
+
+Docker is essential for running databases, tests, and containerized deployments:
+
+```bash
+# Install Docker on macOS (using Homebrew)
+brew install --cask docker
+
+# Install Docker on Ubuntu
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Verify installation
+docker --version
+```
+
+### 📊 Node Version Manager (NVM)
+
+NVM enables seamless switching between Node.js versions:
+
+```bash
+# Install NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+#  Auto-switch node version based on .nvmrc (add to your .zshrc or .bashrc)
+autoload -U add-zsh-hook
+load-nvmrc() {
+  local node_version="$(nvm version)"
+  local nvmrc_path="$(nvm_find_nvmrc)"
+
+  if [ -n "$nvmrc_path" ]; then
+    local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+
+    if [ "$nvmrc_node_version" = "N/A" ]; then
+      nvm install
+    elif [ "$nvmrc_node_version" != "$node_version" ]; then
+      nvm use
+    fi
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrcexport PATH="$HOME/.local/bin:$PATH"
+```
+
+After installing these tools, you'll be ready to fully utilize all SaaSFoundry features, including containerized development environments and proper Node.js version management across projects.
+
 ## 🚀 Quick Start
 
-1. **Create a new project using the CLI**
+1. **Create a new project using the integrated CLI**
 
 ```bash
 # Install the CLI globally
@@ -71,23 +128,76 @@ sf new
 
 ## 🛠️ Project Structure
 
+### 🏗️ Architecture Options
+
+<div align="center">
+<table>
+<tr>
+<th width="50%">
+<h3>🔀 Multi-repository</h3>
+</th>
+<th width="50%">
+<h3>➡️ Mono-repository</h3>
+</th>
+</tr>
+<tr>
+<td>
+
 ```
-saasfoundry/
-├── apps/
-│   ├── api/          # NestJS Backend
-│   └── web/          # React Frontend
-├── docker/           # Docker configurations
-├── docs/            # Project documentation
-└── scripts/         # Utility scripts
+yourproject/
+└── 📂 apps/
+    ├── 📂 yourproject-api/        # NestJS Backend API
+    │   ├── 🔵 src/
+    │   │   ├── 🔵 common/         # fitlers, services...
+    │   │   ├── 🔵 configs/        # Api docs, db, env, test...
+    │   │   └── 🔵 modules/        # controllers, services, tests...
+    │   │
+    │   ├── 🔵 docs/               # Generated API documentation
+    │   ├── 🔵 logs/               # API logs
+    │   ├── 🔵 scripts/            # db, tag manager, test init
+    │   ├── 🔵 tests/
+    │   ├── 🔵 prisma/
+    │   └── 🔵 docker-compose.yml  # Docker ready
+    │
+    ├── 📂 yourproject-db/          # PSQL database
+    │   └── 🟢 docker-compose.db.yml
+    │
+    └── 📂 yourproject-web/         # React Frontend
+        ├── 🟠 src/
+        │   ├── components          # layout, nav, ui (shadcn, custom)
+        │   ├── pages               # private / public
+        │   ├── locales             # auth.yml, common.yml...
+        │   ├── router              # guard, routes, lazy-pages...
+        │   ├── hooks               # api / ui / ...
+        │   └── utils
+        │
+        ├── 🟠 scripts/            # db, tag manager, test init
+        ├── 🟠 public/
+        └── 🟠 tests/
+
 ```
+
+</td>
+<td>
+
+```
+# Coming soon! 🚧
+```
+
+</td>
+</tr>
+</table>
+</div>
+
+> **💡 Tip**: Choose multi-repo for separate deployment cycles or mono-repo for tightly coupled projects with shared components.
 
 ## 💡 Why SaaSFoundry?
 
 ### For Startups
 
-- **Time to Market**: Start with a production-ready foundation
+- **Time to Market**: Start with a production-grade development platform
 - **Scalability**: Built for growth from day one
-- **Cost-Effective**: Open-source solution with no licensing fees
+- **Cost-Effective**: Open-source ecosystem with no licensing fees
 
 ### For Freelancers
 
@@ -97,9 +207,9 @@ saasfoundry/
 
 ### For Developers
 
-- **Best Practices**: Follow industry standards
-- **Developer Experience**: Streamlined workflow
-- **Community**: Open-source collaboration
+- **Best Practices**: Built-in industry standards and workflows
+- **Developer Experience**: Streamlined development with integrated tools
+- **Community**: Open-source collaboration and ecosystem
 
 ## 🤝 Contributing
 
@@ -133,9 +243,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Inspired by [SaaSFoundry](https://saasfoundry.com)
-- Built with [NestJS](https://nestjs.com) and [React](https://reactjs.org)
-- Powered by the open-source community
+- Built as a complete SaaS acceleration platform
+- Powered by [NestJS](https://nestjs.com) and [React](https://reactjs.org)
+- Supported by the open-source community
 
 ---
 
