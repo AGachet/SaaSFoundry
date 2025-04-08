@@ -1,5 +1,3 @@
-# 🚀 SaaSFoundry - Integrated SaaS Development Platform
-
 <div align="center">
 
 [![Open Source](https://img.shields.io/badge/Open%20Source-2D3748?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AGachet/saasfoundry)
@@ -13,11 +11,12 @@
 </div>
 
 <div align="center">
-  <!-- Logo placeholder -->
-  <img src="docs/assets/logo.png" alt="SaaSFoundry Logo" width="200"/>
+  <br /><br />
+  <img src="docs/assets/logo.png" alt="SaaSFoundry Logo" width="300"/>
+  <br /><br />
 </div>
 
-## 🌟 What is SaaSFoundry?
+# 🌟 What is SaaSFoundry?
 
 SaaSFoundry is a comprehensive, production-ready development platform for building modern SaaS applications. Far beyond a simple boilerplate, it's a complete ecosystem with CLI tools, automated
 workflows, and integrated best practices. Born from the development of [BillMate Backend](https://github.com/AGachet/billmate-backend) and
@@ -103,6 +102,20 @@ add-zsh-hook chpwd load-nvmrc
 load-nvmrcexport PATH="$HOME/.local/bin:$PATH"
 ```
 
+### 🌈 Peacock (Optional)
+
+Peacock is a Visual Studio Code extension that helps identify and distinguish projects by colorizing your workspace:
+
+```bash
+# For VS Code
+# Install from VS Code marketplace: "johnpapa.vscode-peacock"
+
+# For other compatible IDEs (like Cursor)
+# Check the respective marketplace for Peacock or similar workspace colorizing extensions
+```
+
+This extension is particularly useful when working with multiple repositories simultaneously, offering visual differentiation between frontend and backend workspaces.
+
 After installing these tools, you'll be ready to fully utilize all SaaSFoundry features, including containerized development environments and proper Node.js version management across projects.
 
 ## 🚀 Quick Start
@@ -133,11 +146,9 @@ sf new
 <div align="center">
 <table>
 <tr>
-<th width="50%">
+<th>
 <h3>🔀 Multi-repository</h3>
-</th>
-<th width="50%">
-<h3>➡️ Mono-repository</h3>
+<p><i>(Mono-repository comming soon)</i><p>
 </th>
 </tr>
 <tr>
@@ -175,13 +186,6 @@ yourproject/
         ├── 🟠 public/
         └── 🟠 tests/
 
-```
-
-</td>
-<td>
-
-```
-# Coming soon! 🚧
 ```
 
 </td>

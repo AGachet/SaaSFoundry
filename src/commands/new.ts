@@ -523,6 +523,21 @@ async function openTerminal(directory: string, options?: { command?: string; des
 }
 
 /**
+ * Generates a shell command for initializing Husky and setting up script permissions
+ * Uses semicolons instead of && for better AppleScript compatibility
+ * @returns A shell command string that handles Husky installation and script permissions
+ */
+function getHuskySetupCommand(extraCommand: string = ''): string {
+  const huskyCommand = ['npx husky install', 'chmod -R +x .husky 2>/dev/null || true', 'chmod -R +x ./scripts/*.sh 2>/dev/null || true']
+
+  if (extraCommand) {
+    huskyCommand.push(extraCommand)
+  }
+
+  return huskyCommand.join('; ')
+}
+
+/**
  * Starts the backend server in a new terminal tab
  */
 async function startBackend(projectName: string, isMonorepo: boolean, newTerminal: boolean = false): Promise<void> {
@@ -533,10 +548,9 @@ async function startBackend(projectName: string, isMonorepo: boolean, newTermina
     exec(`cd ${apiPath} && npm run dev`)
     return
   }
-
   try {
     const success = await openTerminal(apiPath, {
-      command: 'npm run dev',
+      command: getHuskySetupCommand('npm run dev'),
       description: 'Starting backend in new terminal...'
     })
 
@@ -564,7 +578,7 @@ async function startFrontend(projectName: string, isMonorepo: boolean, newTermin
 
   try {
     const success = await openTerminal(webPath, {
-      command: 'npm run dev',
+      command: getHuskySetupCommand('npm run dev'),
       description: 'Starting frontend in new terminal...'
     })
 
@@ -737,13 +751,19 @@ export async function newCommand() {
         // If user didn't choose to start the backend, open a contextualized terminal for it
         if (startApps !== 'backend' && startApps !== 'all') {
           const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
-          await openTerminal(apiPath, { description: 'Opening terminal for backend...' })
+          await openTerminal(apiPath, {
+            command: getHuskySetupCommand(),
+            description: 'Opening terminal for backend...'
+          })
         }
 
         // If user didn't choose to start the frontend, open a contextualized terminal for it
         if (startApps !== 'frontend' && startApps !== 'all') {
           const webPath = startProjectAnswers.isMonorepo ? 'apps/web' : `apps/${startProjectAnswers.projectName}-web`
-          await openTerminal(webPath, { description: 'Opening terminal for frontend...' })
+          await openTerminal(webPath, {
+            command: getHuskySetupCommand(),
+            description: 'Opening terminal for frontend...'
+          })
         }
 
         // Open browser with API docs if backend is started
@@ -784,8 +804,14 @@ export async function newCommand() {
 
       console.log(chalk.blue('Opening terminals for your project...'))
 
-      await openTerminal(apiPath, { description: 'Opening terminal for backend...' })
-      await openTerminal(webPath, { description: 'Opening terminal for frontend...' })
+      await openTerminal(apiPath, {
+        command: getHuskySetupCommand(),
+        description: 'Opening terminal for backend...'
+      })
+      await openTerminal(webPath, {
+        command: getHuskySetupCommand(),
+        description: 'Opening terminal for frontend...'
+      })
     }
   } else {
     // User chose manual DB setup, let's open terminals for both apps
@@ -794,8 +820,14 @@ export async function newCommand() {
 
     console.log(chalk.blue('Opening terminals for your project...'))
 
-    await openTerminal(apiPath, { description: 'Opening terminal for backend...' })
-    await openTerminal(webPath, { description: 'Opening terminal for frontend...' })
+    await openTerminal(apiPath, {
+      command: getHuskySetupCommand(),
+      description: 'Opening terminal for backend...'
+    })
+    await openTerminal(webPath, {
+      command: getHuskySetupCommand(),
+      description: 'Opening terminal for frontend...'
+    })
   }
 
   // Display success message with project name

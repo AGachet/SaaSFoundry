@@ -19,12 +19,12 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .prettierignore",
     "lint": "eslint --config eslint.config.mjs .",
     "prepublishOnly": "npm run build",
-    "postinstall": "npm run build && npx husky install && find .husky -type f -exec chmod +x {} + && if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi",
     "link": "npm link --force",
     "unlink": "npm unlink -g @saasfoundry/cli && hash -r",
     "prepare": "husky",
     "test:full": "npm run format && npm run lint",
-    "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\""
+    "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
+    "postinstall": "npm run build && if [ \"$CI\" != \"true\" ] && [ \"$HUSKY\" != \"0\" ]; then npx husky install && find .husky -type f -exec chmod +x {} + && if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi; fi"
   },
   "config": {
     "loglevel": "error"
