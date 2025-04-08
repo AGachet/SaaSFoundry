@@ -18,13 +18,13 @@
     "test": "jest",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .prettierignore",
     "lint": "eslint --config eslint.config.mjs .",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "rm -rf dist && npm run build",
     "link": "npm link --force",
     "unlink": "npm unlink -g saasfoundry-cli && hash -r",
     "prepare": "husky",
     "test:full": "npm run format && npm run lint",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
-    "postinstall": "npm run build && if [ \"$CI\" != \"true\" ] && [ \"$HUSKY\" != \"0\" ]; then npx husky install && find .husky -type f -exec chmod +x {} + && if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi; fi"
+    "postinstall": "if [ \"$CI\" != \"true\" ] && [ \"$HUSKY\" != \"0\" ] && [ \"$npm_config_global\" != \"true\" ]; then husky install && find .husky -type f -exec chmod +x {} + 2>/dev/null || true && if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} + 2>/dev/null || true; fi; fi"
   },
   "config": {
     "loglevel": "error"
@@ -38,7 +38,8 @@
     "module-alias": "2.2.3",
     "ora": "5.4.1",
     "shelljs": "0.8.5",
-    "simple-git": "3.22.0"
+    "simple-git": "3.22.0",
+    "typescript": "5.7.3"
   },
   "devDependencies": {
     "@commitlint/cli": "19.6.1",
@@ -54,7 +55,6 @@
     "husky": "8.0.0",
     "jest": "29.7.0",
     "prettier": "3.4.2",
-    "typescript": "5.7.3",
     "typescript-eslint": "8.20.0"
   },
   "overrides": {
