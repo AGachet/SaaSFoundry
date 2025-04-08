@@ -1,6 +1,6 @@
 {
   "name": "@saasfoundry/cli",
-  "version": "0.0.0",
+  "version": "0.1.0-beta",
   "description": "CLI for SaaSFoundry",
   "main": "dist/index.js",
   "files": [
