@@ -1,12 +1,12 @@
 {
-  "name": "@saasfoundry/cli",
+  "name": "saasfoundry-cli",
   "version": "0.1.0-beta",
-  "description": "CLI for SaaSFoundry",
+  "description": "CLI for SaaSFoundry - Integrated SaaS Development Platform",
   "main": "dist/index.js",
   "files": [
     "dist",
     "bin",
-    "templates"
+    "scaffolds"
   ],
   "bin": {
     "sf": "./bin/sf.js",
@@ -20,7 +20,7 @@
     "lint": "eslint --config eslint.config.mjs .",
     "prepublishOnly": "npm run build",
     "link": "npm link --force",
-    "unlink": "npm unlink -g @saasfoundry/cli && hash -r",
+    "unlink": "npm unlink -g saasfoundry-cli && hash -r",
     "prepare": "husky",
     "test:full": "npm run format && npm run lint",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
