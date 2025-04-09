@@ -12,7 +12,7 @@
 
 <div align="center">
   <br /><br />
-  <img src="docs/assets/logo.png" alt="SaaSFoundry Logo" width="300"/>
+  <img src="https://raw.githubusercontent.com/AGachet/SaaSFoundry/refs/heads/master/docs/assets/logo.png" alt="SaaSFoundry Logo" width="300"/>
   <br /><br />
 </div>
 
