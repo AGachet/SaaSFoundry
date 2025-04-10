@@ -39,7 +39,7 @@
     "lint": "eslint --config eslint.config.mjs .",
     "prepublishOnly": "rm -rf dist && npm run build",
     "link": "npm link --force",
-    "unlink": "npm unlink -g saasfoundry-cli && hash -r",
+    "uninstall": "npm unlink -g saasfoundry-cli && hash -r",
     "prepare": "husky",
     "test:full": "npm run format && npm run lint",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
