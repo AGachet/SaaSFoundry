@@ -1,8 +1,27 @@
 {
   "name": "saasfoundry-cli",
   "version": "0.1.2-beta",
+  "author": "Anthony Gachet <anthony.gachet@diamondforge.fr>",
+  "license": "MIT",
   "description": "CLI for SaaSFoundry - Integrated SaaS Development Platform",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AGachet/saasfoundry.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AGachet/saasfoundry/issues"
+  },
+  "homepage": "https://www.npmjs.com/package/saasfoundry-cli",
+  "keywords": [
+    "cli",
+    "saas",
+    "starter-kit",
+    "nestjs",
+    "react",
+    "typescript",
+    "rbac"
+  ],
   "files": [
     "dist",
     "bin",
