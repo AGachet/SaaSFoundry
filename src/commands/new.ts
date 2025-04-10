@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import crypto from 'crypto'
 import fs from 'fs'
 import { copy } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
@@ -60,6 +61,15 @@ interface CreateDbAppParams {
 // Paths
 const blueprintsPath = resolve(__dirname, '../../scaffolds/blueprints')
 const overlaysPath = resolve(__dirname, '../../scaffolds/overlays')
+
+/**
+ * Generate a secure random string for JWT secrets
+ * @param length Length of the secret (default: 64)
+ * @returns A secure random string
+ */
+function generateJwtSecret(length: number = 64): string {
+  return crypto.randomBytes(length).toString('hex')
+}
 
 /**
  * Set default values for database credentials if they are empty
@@ -262,16 +272,32 @@ async function createApiApp({ isMonorepo, projectName, projectDescription, backe
 
     // Update .env
     const envPath = `${apiPath}/.env`
-    if (dbCredentials) {
-      let envContent = await readFile(envPath, 'utf8')
-      const { host, port, user, password, database, dbType } = dbCredentials
+    let envContent = await readFile(envPath, 'utf8')
 
+    // Generate JWT secrets
+    const jwtSecrets = {
+      auth: generateJwtSecret(),
+      refresh: generateJwtSecret(),
+      confirmAccount: generateJwtSecret(),
+      resetPassword: generateJwtSecret()
+    }
+
+    // Update JWT secrets in .env
+    envContent = envContent
+      .replace(/JWT_SECRET_AUTH=.*$/m, `JWT_SECRET_AUTH="${jwtSecrets.auth}"`)
+      .replace(/JWT_SECRET_REFRESH=.*$/m, `JWT_SECRET_REFRESH="${jwtSecrets.refresh}"`)
+      .replace(/JWT_SECRET_CONFIRM_ACCOUNT=.*$/m, `JWT_SECRET_CONFIRM_ACCOUNT="${jwtSecrets.confirmAccount}"`)
+      .replace(/JWT_SECRET_RESET_PASSWORD=.*$/m, `JWT_SECRET_RESET_PASSWORD="${jwtSecrets.resetPassword}"`)
+
+    // Update database credentials if provided
+    if (dbCredentials) {
+      const { host, port, user, password, database, dbType } = dbCredentials
       envContent = envContent
         .replace(/DATABASE_URL=.*$/m, `DATABASE_URL="${dbType}://${user}:${password}@${host}:${port}/${database}"`)
         .replace(/DIRECT_URL=.*$/m, `DIRECT_URL="${dbType}://${user}:${password}@${host}:${port}/${database}"`)
-
-      await writeFile(envPath, envContent)
     }
+
+    await writeFile(envPath, envContent)
 
     // Update Docker network name in docker-compose.yml
     const dockerComposePath = `${apiPath}/docker-compose.yml`
