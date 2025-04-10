@@ -241,6 +241,8 @@ We follow conventional commits for better versioning and changelog generation. W
 
 Detailed documentation is available at [saasfoundry.diamondforge.fr](https://saasfoundry.diamondforge.fr) (coming soon).
 
+📦 Available on npm: [saasfoundry-cli](https://www.npmjs.com/package/saasfoundry-cli)
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
