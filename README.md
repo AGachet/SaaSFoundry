@@ -134,7 +134,7 @@ sf new
 
 2. **Choose your starting point**
 
-- [Backend](scaffolds/blueprints/api/README.md/api/README.md)
+- [Backend](scaffolds/blueprints/api/README.md)
 - [Frontend](scaffolds/blueprints/web/README.md)
 
 3. **Follow the detailed documentation** Each component has its own README with specific instructions and best practices.
