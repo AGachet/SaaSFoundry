@@ -8,13 +8,14 @@ import { PassportModule } from '@nestjs/passport'
 /**
  * Dependencies
  */
+import { EnvModule } from '@configs/env/env.module'
 import { EnvConfig } from '@configs/env/services/env.service'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
-import { AuthService } from '@modules/auth/services/auth.service'
 import { AuthController } from '@modules/auth/controllers/auth.controller'
-import { EnvModule } from '@configs/env/env.module'
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard'
+import { AuthService } from '@modules/auth/services/auth.service'
 import { JwtStrategy } from '@modules/auth/strategies/jwt.strategy'
+import { EmailModule } from '@modules/email/email.module'
 
 /**
  * Declaration
@@ -31,7 +32,8 @@ import { JwtStrategy } from '@modules/auth/strategies/jwt.strategy'
         }
       }),
       inject: [EnvConfig]
-    })
+    }),
+    EmailModule
   ],
   providers: [AuthService, PrismaService, JwtAuthGuard, JwtStrategy],
   controllers: [AuthController],

@@ -21,6 +21,7 @@ export class EnvConfig {
   static readonly schema = z.object({
     // Server Configuration
     PORT: z.string().transform(Number).default('3500'),
+    FRONTEND_URL: z.string().url(),
 
     // Database Configuration
     DATABASE_URL: z.string().url(),
@@ -40,6 +41,11 @@ export class EnvConfig {
     JWT_SECRET_REFRESH: z.string().min(process.env.NODE_ENV === 'test' ? 1 : 32),
     JWT_SECRET_CONFIRM_ACCOUNT: z.string().min(process.env.NODE_ENV === 'test' ? 1 : 32),
     JWT_SECRET_RESET_PASSWORD: z.string().min(process.env.NODE_ENV === 'test' ? 1 : 32),
+
+    // MailerSend Configuration
+    // TODO mailer-service-active: MAILERSEND_API_KEY: z.string(),
+    // TODO mailer-service-active: MAILERSEND_SENDER_EMAIL: z.string().email(),
+    // TODO mailer-service-active: MAILERSEND_SENDER_NAME: z.string(),
 
     // Log Configuration
     LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),

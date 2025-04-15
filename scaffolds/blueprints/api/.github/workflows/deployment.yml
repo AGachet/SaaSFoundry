@@ -2,7 +2,7 @@ name: Deployment
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
   workflow_dispatch:
     inputs:
       version:
@@ -269,7 +269,7 @@ jobs:
 
           # Create network if it doesn't exist
           echo "Creating network if it doesn't exist..."
-          ssh cinas-ext "/usr/local/bin/docker network inspect saasforge-network >/dev/null 2>&1 || /usr/local/bin/docker network create saasforge-network"
+          ssh cinas-ext "/usr/local/bin/docker network inspect billmate-network >/dev/null 2>&1 || /usr/local/bin/docker network create billmate-network"
           check_ssh_status "Network creation" "docker network inspect/create"
 
           # Backup current docker-compose.yml if it exists
@@ -298,6 +298,7 @@ jobs:
           # Server Configuration
           PORT=\"3500\"
           NODE_ENV=\"production\"
+          FRONTEND_URL=\"${{ secrets.FRONTEND_URL }}\"
 
           # Database Configuration
           DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"
@@ -315,6 +316,11 @@ jobs:
           JWT_SECRET_REFRESH=\"${{ secrets.JWT_SECRET_REFRESH }}\"
           JWT_SECRET_CONFIRM_ACCOUNT=\"${{ secrets.JWT_SECRET_CONFIRM_ACCOUNT }}\"
           JWT_SECRET_RESET_PASSWORD=\"${{ secrets.JWT_SECRET_RESET_PASSWORD }}\"
+
+          # Mail Service Configuration
+          # MAILERSEND_API_KEY=""
+          # MAILERSEND_SENDER_EMAIL=""
+          # MAILERSEND_SENDER_NAME=""
 
           # Log Configuration
           LOG_LEVEL=\"info\"
