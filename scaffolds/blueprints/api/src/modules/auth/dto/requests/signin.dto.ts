@@ -1,8 +1,9 @@
 /**
  * Resources
  */
-import { IsEmail, IsString, MinLength, IsOptional, MaxLength } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Locale } from '@prisma/client'
+import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator'
 
 /**
  * Declaration
@@ -37,4 +38,13 @@ export class SignInDto {
   @IsString()
   @MaxLength(500, { message: 'Token is too long' })
   confirmAccountToken?: string
+
+  @ApiPropertyOptional({
+    description: 'User locale preference',
+    example: 'EN',
+    default: 'EN'
+  })
+  @IsOptional()
+  @IsString()
+  locale?: Locale
 }

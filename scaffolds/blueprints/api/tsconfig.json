@@ -1,10 +1,11 @@
 {
+  "exclude": ["**/*.disabled-spec.ts"],
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2021",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "declaration": true,
+    "declaration": false,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
