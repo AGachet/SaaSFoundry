@@ -33,7 +33,7 @@ import { useSignUp, useSignUpSchema, type SignUpPayloadDto } from '@/hooks/api/a
 export function SignUp() {
   const { t: tAuth } = useTranslation('auth')
   const { t: tCommon } = useTranslation('common')
-  const [userEmail, setUserEmail] = useState('')
+  const [authError, setAuthError] = useState<string | null>(null)
 
   // React Query mutation
   const signUpMutation = useSignUp()
@@ -47,15 +47,23 @@ export function SignUp() {
       firstname: '',
       lastname: '',
       email: '',
-      password: ''
+      password: '',
+      locale: navigator.language
     }
   })
 
   const onSubmit = (values: SignUpPayloadDto) => {
-    setUserEmail(values.email)
+    setAuthError(null)
 
-    // Use the React Query mutation
-    signUpMutation.submit(values)
+    // Prepare payload
+    const payload: SignUpPayloadDto = { ...values }
+
+    // Use React Query mutation
+    signUpMutation.submit(payload, {
+      onError: () => {
+        setAuthError(tAuth('signup.tk_authError_'))
+      }
+    })
   }
 
   // Reusable form field
@@ -101,7 +109,7 @@ export function SignUp() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert className="bg-blue-50 text-blue-800">
-              <AlertDescription>{tAuth('signup.tk_verifyEmailDescription_', { userEmail })}</AlertDescription>
+              <AlertDescription>{tAuth('signup.tk_verifyEmailDescription_', { userEmail: form.getValues('email') })}</AlertDescription>
             </Alert>
             <p className="text-center text-sm text-muted-foreground">{tAuth('signup.tk_checkSpam_')}</p>
           </CardContent>
@@ -125,11 +133,11 @@ export function SignUp() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
-            {signUpMutation.isError && (
+            {authError && (
               <Alert className="bg-red-50 text-red-800">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" />
-                  <AlertDescription>{tAuth('signup.tk_errorMessage_')}</AlertDescription>
+                  <AlertDescription>{authError}</AlertDescription>
                 </div>
               </Alert>
             )}
