@@ -269,7 +269,7 @@ jobs:
 
           # Create network if it doesn't exist
           echo "Creating network if it doesn't exist..."
-          ssh cinas-ext "/usr/local/bin/docker network inspect saasforge-network >/dev/null 2>&1 || /usr/local/bin/docker network create saasforge-network"
+          ssh cinas-ext "/usr/local/bin/docker network inspect saasfoundry-network >/dev/null 2>&1 || /usr/local/bin/docker network create saasfoundry-network"
           check_ssh_status "Network creation" "docker network inspect/create"
 
           # Backup current docker-compose.yml if it exists
