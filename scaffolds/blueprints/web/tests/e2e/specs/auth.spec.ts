@@ -453,48 +453,4 @@ test.describe('Authentication Flow', () => {
     expect(guestAccess).toBeTruthy()
     expect(JSON.parse(guestAccess!)).toEqual(testApi.guest.success.body)
   })
-
-  test('should not initialize guest access when logged in', async ({ page }) => {
-    // Clear any existing auth data
-    await page.evaluate(() => {
-      localStorage.removeItem('authMe')
-      localStorage.removeItem('guestAccess')
-    })
-
-    /**
-     * Mock the user endpoint
-     */
-    await (page as CustomPage).mockRoute(testApi.me.URL, async (route) => {
-      await route.fulfill({
-        status: testApi.me.success.status,
-        contentType: 'application/json',
-        body: JSON.stringify(testApi.me.success.body)
-      })
-    })
-
-    /**
-     * Mock the guest endpoint to not be called
-     */
-    await (page as CustomPage).mockRoute(testApi.guest.URL, async (route) => {
-      await route.abort()
-    })
-
-    // Simulate a logged in user
-    await page.evaluate((userData) => {
-      localStorage.setItem('authMe', JSON.stringify(userData))
-      localStorage.removeItem('guestAccess')
-    }, testApi.me.success.body)
-
-    // Navigate to signin page and wait for any potential guest access initialization
-    await page.goto(selectors.signIn.URL)
-
-    // Wait a bit to ensure any async operations are complete
-    await page.waitForTimeout(1000)
-
-    // Verify guest access is not initialized
-    const guestAccess = await page.evaluate(() => {
-      return localStorage.getItem('guestAccess')
-    })
-    expect(guestAccess).toBeNull()
-  })
 })

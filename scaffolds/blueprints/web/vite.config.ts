@@ -25,6 +25,14 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false
         }
+      },
+      watch: {
+        usePolling: true,
+        interval: 1000
+      },
+      hmr: {
+        overlay: true,
+        clientPort: 5173
       }
     },
     build: {

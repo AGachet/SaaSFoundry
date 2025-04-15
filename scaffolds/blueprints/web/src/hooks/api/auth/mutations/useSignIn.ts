@@ -24,7 +24,11 @@ export const useSignInSchema = () => {
       .min(1, { message: tAuth('fields.tk_emailRequired_') })
       .email({ message: tAuth('fields.tk_emailError_') }),
     password: z.string().min(1, { message: tAuth('fields.tk_passwordRequired_') }),
-    confirmAccountToken: z.string().optional()
+    confirmAccountToken: z.string().optional(),
+    locale: z
+      .string()
+      .optional()
+      .transform((val) => val?.toUpperCase())
   })
 
   const response = z.object({
