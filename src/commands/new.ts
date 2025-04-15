@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import crypto from 'crypto'
 import fs from 'fs'
 import { copy } from 'fs-extra'
-import { mkdir, readFile, writeFile } from 'fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'fs/promises'
 import inquirer from 'inquirer'
 import ora from 'ora'
 import { resolve } from 'path'
@@ -33,6 +33,10 @@ interface Answers {
   dbSetup: 'docker' | 'credentials' | 'manual'
   dbCredentials?: DbCredentials
   initDb: boolean
+  emailService: 'none' | 'mailersend'
+  mailersendApiKey?: string
+  mailersendSenderEmail?: string
+  mailersendSenderName?: string
 }
 
 interface CreateApiAppParams {
@@ -42,6 +46,10 @@ interface CreateApiAppParams {
   backendRepoUrl: string
   dbCredentials?: DbCredentials
   mainBranch: string
+  emailService: 'none' | 'mailersend'
+  mailersendApiKey?: string
+  mailersendSenderEmail?: string
+  mailersendSenderName?: string
 }
 
 interface CreateWebAppParams {
@@ -94,7 +102,7 @@ function setDefaultDbCredentials(credentials?: DbCredentials): DbCredentials | u
  * Get user inputs
  */
 async function getUserStartProjectInputs() {
-  return await inquirer.prompt<Answers>([
+  const answers = await inquirer.prompt<Answers>([
     {
       type: 'input',
       name: 'projectName',
@@ -244,14 +252,97 @@ async function getUserStartProjectInputs() {
       message: 'Database name',
       when: (answers: Answers) => answers.dbSetup === 'docker' || answers.dbSetup === 'credentials',
       default: 'db_dev'
+    },
+    {
+      type: 'list',
+      name: 'emailService',
+      message: 'For your transactional emails (account creation, password reset, etc.), which service would you like to set up?',
+      choices: [
+        { name: 'None, just set up the logic', value: 'none' },
+        { name: 'MailerSend [free, 3000 emails/month]', value: 'mailersend' }
+      ],
+      default: 'mailersend'
     }
   ])
+
+  if (answers.emailService === 'mailersend') {
+    console.log(chalk.yellow('\nYou need to create an account on MailerSend to get your API key.'))
+    console.log(chalk.yellow('Note: The following link is an affiliate link. We appreciate your support of the SaaSFoundry project by signing up through this link.'))
+    console.log(chalk.yellow('Opening https://www.mailersend.com?ref=52o9lkySkTka in your browser in few seconds...'))
+
+    // Wait a few seconds before opening the URL
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+
+    // Open the URL in the default browser
+    await exec(`open https://www.mailersend.com/signup?ref=52o9lkySkTka`)
+
+    const { ready } = await inquirer.prompt<{ ready: boolean }>([
+      {
+        type: 'confirm',
+        name: 'ready',
+        message: 'Are you ready to configure your MailerSend credentials?',
+        default: true
+      }
+    ])
+
+    if (ready) {
+      const mailerSendAnswers = await inquirer.prompt<Answers>([
+        {
+          type: 'input',
+          name: 'mailersendApiKey',
+          message: 'Enter your MailerSend API key',
+          validate: (input: string) => {
+            if (!input) return 'API key is required'
+            return true
+          }
+        },
+        {
+          type: 'input',
+          name: 'mailersendSenderEmail',
+          message: 'Enter your MailerSend sender email',
+          default: `noreply@${answers.projectName.toLowerCase().replace(/\s+/g, '')}.com`,
+          validate: (input: string) => {
+            if (!input) return 'Sender email is required'
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) return 'Please enter a valid email address'
+            return true
+          }
+        },
+        {
+          type: 'input',
+          name: 'mailersendSenderName',
+          message: 'Enter your MailerSend sender name',
+          default: answers.projectName.charAt(0).toUpperCase() + answers.projectName.slice(1),
+          validate: (input: string) => {
+            if (!input) return 'Sender name is required'
+            return true
+          }
+        }
+      ])
+
+      return { ...answers, ...mailerSendAnswers }
+    } else {
+      console.log(chalk.yellow('\nThe email service logic will be set up but disabled until you implement your own service.'))
+    }
+  }
+
+  return answers
 }
 
 /**
  * Step functions
  */
-async function createApiApp({ isMonorepo, projectName, projectDescription, backendRepoUrl, dbCredentials, mainBranch }: CreateApiAppParams) {
+async function createApiApp({
+  isMonorepo,
+  projectName,
+  projectDescription,
+  backendRepoUrl,
+  dbCredentials,
+  mainBranch,
+  emailService,
+  mailersendApiKey,
+  mailersendSenderEmail,
+  mailersendSenderName
+}: CreateApiAppParams) {
   try {
     // Create the API app directory
     const apiPath = isMonorepo ? 'apps/api' : `apps/${projectName}-api`
@@ -289,12 +380,102 @@ async function createApiApp({ isMonorepo, projectName, projectDescription, backe
       .replace(/JWT_SECRET_CONFIRM_ACCOUNT=.*$/m, `JWT_SECRET_CONFIRM_ACCOUNT="${jwtSecrets.confirmAccount}"`)
       .replace(/JWT_SECRET_RESET_PASSWORD=.*$/m, `JWT_SECRET_RESET_PASSWORD="${jwtSecrets.resetPassword}"`)
 
+    // Update email templates with project name
+    const enLocalePath = `${apiPath}/src/modules/email/locales/en.ts`
+    const frLocalePath = `${apiPath}/src/modules/email/locales/fr.ts`
+
+    if (await fileExists(enLocalePath)) {
+      let enLocaleContent = await readFile(enLocalePath, 'utf8')
+      enLocaleContent = enLocaleContent.replace(/BillMate/g, projectName.toUpperCase())
+      await writeFile(enLocalePath, enLocaleContent)
+    }
+
+    if (await fileExists(frLocalePath)) {
+      let frLocaleContent = await readFile(frLocalePath, 'utf8')
+      frLocaleContent = frLocaleContent.replace(/BillMate/g, projectName.toUpperCase())
+      await writeFile(frLocalePath, frLocaleContent)
+    }
+
     // Update database credentials if provided
     if (dbCredentials) {
       const { host, port, user, password, database, dbType } = dbCredentials
       envContent = envContent
         .replace(/DATABASE_URL=.*$/m, `DATABASE_URL="${dbType}://${user}:${password}@${host}:${port}/${database}"`)
         .replace(/DIRECT_URL=.*$/m, `DIRECT_URL="${dbType}://${user}:${password}@${host}:${port}/${database}"`)
+    }
+
+    // Update MailerSend configuration if selected
+    if (emailService === 'mailersend') {
+      // Copy MailerSend service to the API email services directory
+      const mailerSendServicePath = resolve(overlaysPath, 'modules/email/services/mailersend.service.ts')
+      const apiServicesPath = `${apiPath}/src/modules/email/services`
+      await copy(mailerSendServicePath, `${apiServicesPath}/mailersend.service.ts`)
+
+      // Uncomment email sending code in auth.service.ts and env.service.ts
+      const authServicePath = `${apiPath}/src/modules/auth/services/auth.service.ts`
+      let authServiceContent = await readFile(authServicePath, 'utf8')
+      authServiceContent = authServiceContent.replace(/\/\/ TODO mailer-service-active: /g, '').replace(/console\.log\('sendAccountConfirmationEmail', locale\)\n/g, '')
+      await writeFile(authServicePath, authServiceContent)
+
+      // Uncomment email configuration in env.service.ts
+      const envServicePath = `${apiPath}/src/configs/env/services/env.service.ts`
+      let envServiceContent = await readFile(envServicePath, 'utf8')
+      envServiceContent = envServiceContent.replace(/\/\/ TODO mailer-service-active: /g, '')
+      await writeFile(envServicePath, envServiceContent)
+
+      // Uncomment email sending code in email.service.ts
+      const emailServicePath = `${apiPath}/src/modules/email/services/email.service.ts`
+      let emailServiceContent = await readFile(emailServicePath, 'utf8')
+      emailServiceContent = emailServiceContent
+        .replace(/\/\/ /g, '')
+        .replace(/console\.log\('html', html\)\n/g, '')
+        .replace(/console\.log\('text', text\)\n/g, '')
+      await writeFile(emailServicePath, emailServiceContent)
+
+      // Update email.module.ts to include MailerSendService
+      const emailModulePath = `${apiPath}/src/modules/email/email.module.ts`
+      let emailModuleContent = await readFile(emailModulePath, 'utf8')
+
+      // Add import for MailerSendService
+      emailModuleContent = emailModuleContent.replace(
+        /import { TranslationService } from '@modules\/email\/services\/translation.service'/,
+        `import { TranslationService } from '@modules/email/services/translation.service'\nimport { MailerSendService } from '@modules/email/services/mailersend.service'`
+      )
+
+      // Add MailerSendService to providers array
+      emailModuleContent = emailModuleContent.replace(/providers: \[EmailService, EnvConfig, TranslationService\]/, `providers: [EmailService, EnvConfig, TranslationService, MailerSendService]`)
+
+      await writeFile(emailModulePath, emailModuleContent)
+
+      // Rename email.service.disabled-spec.ts to email.service.spec.ts
+      const emailServiceSpecPath = `${apiPath}/src/modules/email/tests/unit/email.service.disabled-spec.ts`
+      const emailServiceSpecNewPath = `${apiPath}/src/modules/email/tests/unit/email.service.spec.ts`
+      if (await fileExists(emailServiceSpecPath)) await rename(emailServiceSpecPath, emailServiceSpecNewPath)
+
+      // Update deployment.yml to uncomment MailerSend configuration
+      const deploymentYmlPath = `${apiPath}/.github/workflows/deployment.yml`
+      if (await fileExists(deploymentYmlPath)) {
+        let deploymentYmlContent = await readFile(deploymentYmlPath, 'utf8')
+        deploymentYmlContent = deploymentYmlContent
+          .replace(/# MAILERSEND_API_KEY=.*$/m, `MAILERSEND_API_KEY=\\"\${{ secrets.MAILERSEND_API_KEY }}\\"`)
+          .replace(/# MAILERSEND_SENDER_EMAIL=.*$/m, `MAILERSEND_SENDER_EMAIL=\\"${mailersendSenderEmail}\\"`)
+          .replace(/# MAILERSEND_SENDER_NAME=.*$/m, `MAILERSEND_SENDER_NAME=\\"${mailersendSenderName}\\"`)
+        await writeFile(deploymentYmlPath, deploymentYmlContent)
+      }
+
+      envContent = envContent
+        .replace(/# MAILERSEND_API_KEY=.*$/m, `MAILERSEND_API_KEY="${mailersendApiKey}"`)
+        .replace(/# MAILERSEND_SENDER_EMAIL=.*$/m, `MAILERSEND_SENDER_EMAIL="${mailersendSenderEmail}"`)
+        .replace(/# MAILERSEND_SENDER_NAME=.*$/m, `MAILERSEND_SENDER_NAME="${mailersendSenderName}"`)
+
+      // Update .env.test
+      const envTestPath = `${apiPath}/.env.test`
+      let envTestContent = await readFile(envTestPath, 'utf8')
+      envTestContent = envTestContent
+        .replace(/# MAILERSEND_API_KEY=.*$/m, `MAILERSEND_API_KEY="ms_test_fake_key_12345abcdef67890ghijklmnopqrstuvwxyz"`)
+        .replace(/# MAILERSEND_SENDER_EMAIL=.*$/m, `MAILERSEND_SENDER_EMAIL="${mailersendSenderEmail}"`)
+        .replace(/# MAILERSEND_SENDER_NAME=.*$/m, `MAILERSEND_SENDER_NAME="${mailersendSenderName}"`)
+      await writeFile(envTestPath, envTestContent)
     }
 
     await writeFile(envPath, envContent)
@@ -711,7 +892,11 @@ export async function newCommand() {
       projectDescription: startProjectAnswers.projectDescription,
       backendRepoUrl: startProjectAnswers.backendRepoUrl,
       dbCredentials: startProjectAnswers.dbCredentials,
-      mainBranch: startProjectAnswers.mainBranch
+      mainBranch: startProjectAnswers.mainBranch,
+      emailService: startProjectAnswers.emailService,
+      mailersendApiKey: startProjectAnswers.mailersendApiKey,
+      mailersendSenderEmail: startProjectAnswers.mailersendSenderEmail,
+      mailersendSenderName: startProjectAnswers.mailersendSenderName
     })
     updateProgress()
 
