@@ -1,4 +1,4 @@
-# 🚀 SaaSForge API
+# 🚀 SaaSFoundry API
 
 <div align="center">
 
@@ -11,7 +11,7 @@
 
 ## 📝 Description
 
-SaaSForge API is a modular NestJS backend boilerplate, offering a robust and scalable architecture for modern SaaS application development. Built with best practices and cutting-edge technologies.
+SaaSFoundry API is a modular NestJS backend boilerplate, offering a robust and scalable architecture for modern SaaS application development. Built with best practices and cutting-edge technologies.
 
 ### 🛠️ Tech Stack
 
@@ -33,8 +33,8 @@ SaaSForge API is a modular NestJS backend boilerplate, offering a robust and sca
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-org/saasforge.git
-cd saasforge/apps/api
+git clone https://github.com/your-org/saasfoundry.git
+cd saasfoundry/apps/api
 
 # 2. Install dependencies
 npm install
@@ -44,7 +44,7 @@ cp .env.test .env
 # Edit .env with your configurations
 
 # 4. Start the database
-docker network create saasforge-network
+docker network create saasfoundry-network
 docker-compose -f ../db/docker-compose.db-dev.yml up -d
 
 # 5. Initialize database
@@ -95,10 +95,10 @@ npm run test:full
 
 ```bash
 # Create network (if needed)
-docker network create saasforge-network
+docker network create saasfoundry-network
 
 # Build image
-docker build -t saasforge-api .
+docker build -t saasfoundry-api .
 
 # Start with Docker Compose
 docker-compose up --build

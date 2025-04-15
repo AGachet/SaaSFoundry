@@ -488,6 +488,14 @@ async function createApiApp({
       await writeFile(dockerComposePath, dockerComposeContent)
     }
 
+    // Update network name in GitHub Actions deployment.yml
+    const deploymentYmlPath = `${apiPath}/.github/workflows/deployment.yml`
+    if (await fileExists(deploymentYmlPath)) {
+      let deploymentYmlContent = await readFile(deploymentYmlPath, 'utf8')
+      deploymentYmlContent = deploymentYmlContent.replace(/saasfoundry-network/g, `${projectName}-network`)
+      await writeFile(deploymentYmlPath, deploymentYmlContent)
+    }
+
     // Initialize Git repository
     if (!isMonorepo) {
       await exec(`git init ${apiPath} > /dev/null 2>&1`)
@@ -560,6 +568,14 @@ async function createWebApp({ isMonorepo, projectName, projectDescription, front
       let dockerComposeContent = await readFile(dockerComposePath, 'utf8')
       dockerComposeContent = dockerComposeContent.replace(/saasfoundry-network/g, `${projectName}-network`).replace(/saasfoundry-web/g, `${projectName}-web`)
       await writeFile(dockerComposePath, dockerComposeContent)
+    }
+
+    // Update network name in GitHub Actions deployment.yml
+    const deploymentYmlPath = `${webPath}/.github/workflows/deployment.yml`
+    if (await fileExists(deploymentYmlPath)) {
+      let deploymentYmlContent = await readFile(deploymentYmlPath, 'utf8')
+      deploymentYmlContent = deploymentYmlContent.replace(/saasfoundry-network/g, `${projectName}-network`)
+      await writeFile(deploymentYmlPath, deploymentYmlContent)
     }
 
     // Initialize Git repository
