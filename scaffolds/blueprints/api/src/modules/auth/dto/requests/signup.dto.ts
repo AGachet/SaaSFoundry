@@ -1,8 +1,9 @@
 /**
  * Resources
  */
-import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Locale } from '@prisma/client'
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator'
 
 /**
  * Declaration
@@ -48,4 +49,13 @@ export class SignUpDto {
     message: 'Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number'
   })
   password: string
+
+  @ApiPropertyOptional({
+    description: 'User locale preference',
+    example: 'EN',
+    default: 'EN'
+  })
+  @IsOptional()
+  @IsString()
+  locale?: Locale
 }

@@ -14,6 +14,7 @@ import { EnvConfig } from '@configs/env/services/env.service'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
 import { mockChalk, mockWinston } from '@configs/test/unit-mocks-glob'
 import { AuthService } from '@modules/auth/services/auth.service'
+import { EmailService } from '@modules/email/services/email.service'
 
 /**
  * Type
@@ -28,6 +29,7 @@ jest.mock('@nestjs/jwt')
 jest.mock('@configs/prisma/services/prisma.service')
 jest.mock('@common/services/logger/logger.service')
 jest.mock('@configs/env/services/env.service')
+jest.mock('@modules/email/services/email.service')
 
 /**
  * Test Data
@@ -155,6 +157,13 @@ describe('AuthService', () => {
           provide: EnvConfig,
           useValue: {
             get: jest.fn()
+          }
+        },
+        {
+          provide: EmailService,
+          useValue: {
+            sendAccountConfirmationEmail: jest.fn(),
+            sendPasswordResetEmail: jest.fn()
           }
         }
       ]

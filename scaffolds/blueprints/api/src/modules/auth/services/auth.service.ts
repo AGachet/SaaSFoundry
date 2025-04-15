@@ -3,6 +3,7 @@
  */
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { Locale } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { Response } from 'express'
 import ms from 'ms'
@@ -14,6 +15,7 @@ import { Logger } from '@common/services/logger/logger.service'
 import { UserDefaults } from '@configs/db/user.config'
 import { EnvConfig } from '@configs/env/services/env.service'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
+import { EmailService } from '@modules/email/services/email.service'
 
 /**
  * Type
@@ -53,14 +55,18 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly logger: Logger,
-    private readonly env: EnvConfig
+    private readonly env: EnvConfig,
+    private readonly emailService: EmailService
   ) {}
 
   /**
    * End points methods
    */
   async signUp(signUpDto: SignUpDto): Promise<SignUpResponseDto> {
-    const { email, password, firstname, lastname } = signUpDto
+    const response: SignUpResponseDto = {
+      message: 'If the email address is valid, you will receive a confirmation email shortly.'
+    }
+    const { email, password, firstname, lastname, locale } = signUpDto
 
     this.logger.debug(`Sign-up attempt for ${email}`, 'signUp')
 
@@ -68,9 +74,7 @@ export class AuthService {
     const existingUser = await this.prisma.user.findUnique({ where: { email } })
     if (existingUser) {
       this.logger.warn(`Sign-up attempt with existing email: ${email}`, 'signUp')
-      return {
-        message: 'If the email address is valid, you will receive a confirmation email shortly.'
-      }
+      return response
     }
 
     // Hash the password
@@ -102,23 +106,21 @@ export class AuthService {
     // Log the token in development and test
     if (['development', 'test'].includes(this.env.get('NODE_ENV'))) {
       this.logger.debug(`User created successfully. \n\n------ Confirmation token for ${email} ------ \n${confirmationToken}\n`, 'signUp')
-      return {
-        message: 'If the email address is valid, you will receive a confirmation email shortly.',
-        confirmationToken // Only displayed in development and test
-      }
+      response.confirmationToken = confirmationToken // Only displayed in development and test
     }
 
-    // TODO: Send the email with the token
-    // await this.mailService.sendConfirmationEmail(email, confirmationToken)
+    // Send confirmation email
+    if (this.env.get('NODE_ENV') !== 'test') {
+      console.log('sendAccountConfirmationEmail', locale)
+      // TODO mailer-service-active: await this.emailService.sendAccountConfirmationEmail(email, confirmationToken, firstname, locale)
+    }
 
     this.logger.debug(`Sign-up successful for ${email}`, 'signUp')
-    return {
-      message: 'If the email address is valid, you will receive a confirmation email shortly.'
-    }
+    return response
   }
 
   async signIn(signInDto: SignInDto): Promise<SignInResponseDto & AuthTokens> {
-    const { email, password, confirmAccountToken } = signInDto
+    const { email, password, confirmAccountToken, locale } = signInDto
 
     this.logger.debug(`Sign-in attempt for ${email}`, 'signIn')
 
@@ -132,7 +134,7 @@ export class AuthService {
     }
 
     // Activate user account if a token is provided
-    if (confirmAccountToken) await this.activateUserAccount(user.id, email, confirmAccountToken)
+    if (confirmAccountToken) await this.activateUserAccount(user.id, email, confirmAccountToken, locale || UserDefaults.preferences.locale)
 
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user)
@@ -165,6 +167,9 @@ export class AuthService {
   }
 
   async requestPasswordReset(requestPasswordResetDto: RequestPasswordResetDto): Promise<RequestPasswordResetResponseDto> {
+    const response: RequestPasswordResetResponseDto = {
+      message: 'If the email address is valid and has permission to reset password, you will receive reset instructions shortly.'
+    }
     const { email } = requestPasswordResetDto
 
     this.logger.debug(`Password reset requested for ${email}`, 'requestPasswordReset')
@@ -194,14 +199,15 @@ export class AuthService {
               }
             }
           }
-        }
+        },
+        preference: true
       }
     })
 
     // If the user does not exist or does not have the permissions, still return a success message
     if (!user || !user.rolesLinked.some((userRole) => userRole.role.modulesLinked.length > 0) || !user.rolesLinked.some((userRole) => userRole.role.permissionsLinked.length > 0)) {
       this.logger.warn(`Password reset requested for non-existent user or without permissions: ${email}`, 'requestPasswordReset')
-      return { message: 'If the email address is valid and has permission to reset password, you will receive reset instructions shortly.' }
+      return response
     }
 
     // Generate reset token
@@ -218,15 +224,16 @@ export class AuthService {
 
     // Return token in development and test
     if (['development', 'test'].includes(this.env.get('NODE_ENV'))) {
-      return {
-        message: 'If the email address is valid and has permission to reset password, you will receive reset instructions shortly.',
-        resetToken // Only in development and test
-      }
+      response.resetToken = resetToken // Only in development and test
     }
 
-    // TODO: Send email with reset link
+    // Send reset password email
+    if (this.env.get('NODE_ENV') !== 'test') {
+      // TODO mailer-service-active: await this.emailService.sendPasswordResetEmail(email, resetToken, user.firstname || 'User', user.preference?.locale || UserDefaults.preferences.locale)
+    }
+
     this.logger.debug(`Password reset link sent to ${email}`, 'requestPasswordReset')
-    return { message: 'If the email address is valid and has permission to reset password, you will receive reset instructions shortly.' }
+    return response
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<ResetPasswordResponseDto> {
@@ -472,7 +479,7 @@ export class AuthService {
     })
   }
 
-  private async activateUserAccount(userId: string, email: string, confirmAccountToken: string): Promise<User> {
+  private async activateUserAccount(userId: string, email: string, confirmAccountToken: string, locale?: Locale): Promise<User> {
     await this.verifyToken(confirmAccountToken, this.env.get('JWT_SECRET_CONFIRM_ACCOUNT'))
 
     // Find the token record
@@ -501,7 +508,7 @@ export class AuthService {
         },
         preference: {
           create: {
-            locale: UserDefaults.preferences.locale
+            locale: locale || UserDefaults.preferences.locale
           }
         }
       }
