@@ -12,6 +12,22 @@
   "bugs": {
     "url": "https://github.com/agachet/saasfoundry/issues"
   },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=20.0.0",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": ">=10.0.0",
+      "onFail": "error"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
