@@ -461,15 +461,20 @@ async function openTerminal(directory: string, options?: { command?: string; des
     const absolutePath = `${process.cwd()}/${directory}`
     let success = false
 
-    // Use different commands based on the operating system
-    if (process.platform === 'darwin') {
-      // macOS - try iTerm2 first, then fallback to Terminal.app
-      try {
-        // Check if iTerm2 is installed
-        await exec('osascript -e "tell application \\"iTerm\\" to version"', { silent: true })
+    // Check if we're in WSL
+    const isWsl = process.platform === 'linux' && process.env.WSL_DISTRO_NAME
+    const platform = isWsl ? 'wsl' : process.platform
 
-        // iTerm2 is installed, use a more permissive approach for new tab
-        const script = `
+    // Use different commands based on the operating system
+    switch (platform) {
+      case 'darwin': {
+        // macOS - try iTerm2 first, then fallback to Terminal.app
+        try {
+          // Check if iTerm2 is installed
+          await exec('osascript -e "tell application \\"iTerm\\" to version"', { silent: true })
+
+          // iTerm2 is installed, use a more permissive approach for new tab
+          const script = `
           tell application "iTerm"
             tell current window
               create tab with default profile
@@ -479,58 +484,69 @@ async function openTerminal(directory: string, options?: { command?: string; des
             end tell
           end tell
         `
-        await exec(`osascript -e '${script}'`)
-        success = true
-      } catch {
-        // iTerm2 not found or error, use Terminal.app
-        await exec(
-          `osascript -e 'tell application "Terminal" to tell application "System Events" to keystroke "t" using {command down}' -e 'tell application "Terminal" to do script "cd ${absolutePath}${command ? ` && ${command}` : ''}" in front window'`
-        )
-        success = true
-      }
-    } else if (process.platform === 'win32') {
-      // Windows - check for Windows Terminal
-      const hasWindowsTerminal = (await exec('where wt.exe', { silent: true }).code) === 0
-
-      if (hasWindowsTerminal) {
-        // Windows Terminal
-        if (command) {
-          await exec(`wt.exe -w 0 nt -d "${absolutePath}" cmd /k ${command}`)
-        } else {
-          await exec(`wt.exe -w 0 nt -d "${absolutePath}"`)
-        }
-        success = true
-      } else {
-        // Fallback to cmd
-        await exec(`start cmd.exe /K "cd ${absolutePath}${command ? ` && ${command}` : ''}"`)
-        success = true
-      }
-    } else {
-      // Linux - try to detect current terminal
-      if (process.env.TERM_PROGRAM === 'gnome-terminal') {
-        if (command) {
-          await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash -c "${command}; bash"`)
-        } else {
-          await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash`)
-        }
-        success = true
-      } else if (process.env.TERM_PROGRAM === 'konsole') {
-        if (command) {
-          await exec(`konsole --new-tab --workdir "${absolutePath}" -e bash -c "${command}; bash"`)
-        } else {
-          await exec(`konsole --new-tab --workdir "${absolutePath}"`)
-        }
-        success = true
-      } else {
-        // Fallback to common terminals
-        if (command) {
+          await exec(`osascript -e '${script}'`)
+          success = true
+        } catch {
+          // iTerm2 not found or error, use Terminal.app
           await exec(
-            `gnome-terminal --tab --working-directory="${absolutePath}" -- bash -c "${command}; bash" || konsole --new-tab --workdir "${absolutePath}" -e bash -c "${command}; bash" || xterm -e "cd ${absolutePath} && ${command}; bash"`
+            `osascript -e 'tell application "Terminal" to tell application "System Events" to keystroke "t" using {command down}' -e 'tell application "Terminal" to do script "cd ${absolutePath}${command ? ` && ${command}` : ''}" in front window'`
           )
-        } else {
-          await exec(`gnome-terminal --tab --working-directory="${absolutePath}" -- bash || konsole --new-tab --workdir "${absolutePath}" || xterm -e "cd ${absolutePath} && bash"`)
+          success = true
         }
+        break
+      }
+      case 'win32': {
+        // Windows - check for Windows Terminal
+        const hasWindowsTerminal = (await exec('where wt.exe', { silent: true }).code) === 0
+
+        if (hasWindowsTerminal) {
+          // Windows Terminal
+          if (command) {
+            await exec(`wt.exe -w 0 nt -d "${absolutePath}" cmd /k ${command}`)
+          } else {
+            await exec(`wt.exe -w 0 nt -d "${absolutePath}"`)
+          }
+          success = true
+        } else {
+          // Fallback to cmd
+          await exec(`start cmd.exe /K "cd ${absolutePath}${command ? ` && ${command}` : ''}"`)
+          success = true
+        }
+        break
+      }
+      case 'wsl': {
+        // WSL - use the default shell
+        if (command) await exec(`cd ${absolutePath} && ${command}`)
+        else await exec(`cd ${absolutePath}`)
         success = true
+        break
+      }
+      default: {
+        // Linux - try to detect current terminal
+        const terminals = [
+          {
+            name: 'gnome-terminal',
+            command: (path: string, cmd?: string) =>
+              cmd ? `gnome-terminal --tab --working-directory="${path}" -- bash -c "${cmd}; bash"` : `gnome-terminal --tab --working-directory="${path}" -- bash`
+          },
+          { name: 'konsole', command: (path: string, cmd?: string) => (cmd ? `konsole --new-tab --workdir "${path}" -e bash -c "${cmd}; bash"` : `konsole --new-tab --workdir "${path}"`) },
+          { name: 'xterm', command: (path: string, cmd?: string) => (cmd ? `xterm -e "cd ${path} && ${cmd}; bash"` : `xterm -e "cd ${path} && bash"`) }
+        ]
+
+        for (const terminal of terminals) {
+          try {
+            if (command) {
+              await exec(terminal.command(absolutePath, command))
+            } else {
+              await exec(terminal.command(absolutePath))
+            }
+            success = true
+            break
+          } catch {
+            // Try next terminal
+            continue
+          }
+        }
       }
     }
 
