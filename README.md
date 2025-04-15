@@ -123,13 +123,12 @@ After installing these tools, you'll be ready to fully utilize all SaaSFoundry f
 1. **Create a new project using the integrated CLI**
 
 ```bash
-# Install the CLI globally
-npm install -g saasfoundry-cli@beta
+# Execute directly (no global install needed)
+npx saasfoundry-cli@beta new
 
-# Create a new project
-saasfoundry new
-# or
-sf new
+# OR install the CLI globally
+npm install -g saasfoundry-cli@beta
+sf new       # or: saasfoundry new
 ```
 
 2. **Choose your starting point**
