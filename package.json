@@ -5,6 +5,22 @@
   "license": "MIT",
   "description": "CLI for SaaSFoundry - Integrated SaaS Development Platform",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=20.0.0",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": ">=10.0.0",
+      "onFail": "error"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AGachet/saasfoundry.git"
@@ -42,6 +58,9 @@
     "uninstall": "npm unlink -g saasfoundry-cli && hash -r",
     "prepare": "husky",
     "test:full": "npm run format && npm run lint",
+    "publish:beta": "npm run build && npm publish --tag beta",
+    "publish:latest": "npm run build && npm publish --tag latest",
+    "publish:check": "npm dist-tag ls saasfoundry-cli",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
     "postinstall": "if [ \"$CI\" != \"true\" ] && [ \"$HUSKY\" != \"0\" ] && [ \"$npm_config_global\" != \"true\" ]; then husky install && find .husky -type f -exec chmod +x {} + 2>/dev/null || true && if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} + 2>/dev/null || true; fi; fi"
   },
