@@ -1,7 +1,7 @@
 services:
   db-test:
     image: postgres:16-alpine
-    container_name: saasforge-db-test
+    container_name: saasfoundry-db-test
     restart: 'no' # No need for auto-restart for tests
     environment:
       POSTGRES_USER: test_user
