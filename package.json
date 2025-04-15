@@ -1,6 +1,6 @@
 {
   "name": "saasfoundry-cli",
-  "version": "0.2.0-beta",
+  "version": "0.3.0-beta",
   "author": "Anthony Gachet <anthony.gachet@diamondforge.fr>",
   "license": "MIT",
   "description": "CLI for SaaSFoundry - Integrated SaaS Development Platform",
