@@ -30,7 +30,11 @@ export const useSignUpSchema = () => {
       .max(40)
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, {
         message: tAuth('fields.tk_passwordComplexityError_')
-      })
+      }),
+    locale: z
+      .string()
+      .optional()
+      .transform((val) => val?.toUpperCase())
   })
 
   const response = z.object({

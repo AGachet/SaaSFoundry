@@ -55,7 +55,8 @@ export function SignIn() {
     resolver: zodResolver(schemas.payload),
     defaultValues: {
       email: '',
-      password: ''
+      password: '',
+      locale: navigator.language
     }
   })
 
@@ -67,18 +68,20 @@ export function SignIn() {
   const onSubmit = (values: SignInPayloadDto) => {
     setAuthError(null)
 
+    // Prepare payload
+    const payload: SignInPayloadDto = { ...values }
+
+    // Only add confirmAccountToken and locale if token exists
+    if (confirmAccountToken) {
+      payload.confirmAccountToken = confirmAccountToken
+    }
+
     // Use React Query mutation
-    signInMutation.submit(
-      {
-        ...values,
-        confirmAccountToken: confirmAccountToken || undefined
-      },
-      {
-        onError: () => {
-          setAuthError(tAuth('signin.tk_authError_'))
-        }
+    signInMutation.submit(payload, {
+      onError: () => {
+        setAuthError(tAuth('signin.tk_authError_'))
       }
-    )
+    })
   }
 
   // Reusable form field
