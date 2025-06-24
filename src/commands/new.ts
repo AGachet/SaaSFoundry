@@ -369,6 +369,7 @@ async function createApiApp({
     const jwtSecrets = {
       auth: generateJwtSecret(),
       refresh: generateJwtSecret(),
+      invitation: generateJwtSecret(),
       confirmAccount: generateJwtSecret(),
       resetPassword: generateJwtSecret()
     }
@@ -377,6 +378,7 @@ async function createApiApp({
     envContent = envContent
       .replace(/JWT_SECRET_AUTH=.*$/m, `JWT_SECRET_AUTH="${jwtSecrets.auth}"`)
       .replace(/JWT_SECRET_REFRESH=.*$/m, `JWT_SECRET_REFRESH="${jwtSecrets.refresh}"`)
+      .replace(/JWT_SECRET_INVITATION=.*$/m, `JWT_SECRET_INVITATION="${jwtSecrets.invitation}"`)
       .replace(/JWT_SECRET_CONFIRM_ACCOUNT=.*$/m, `JWT_SECRET_CONFIRM_ACCOUNT="${jwtSecrets.confirmAccount}"`)
       .replace(/JWT_SECRET_RESET_PASSWORD=.*$/m, `JWT_SECRET_RESET_PASSWORD="${jwtSecrets.resetPassword}"`)
 
@@ -386,13 +388,13 @@ async function createApiApp({
 
     if (await fileExists(enLocalePath)) {
       let enLocaleContent = await readFile(enLocalePath, 'utf8')
-      enLocaleContent = enLocaleContent.replace(/BillMate/g, projectName.toUpperCase())
+      enLocaleContent = enLocaleContent.replace(/SaaSFoundry/g, projectName.toUpperCase())
       await writeFile(enLocalePath, enLocaleContent)
     }
 
     if (await fileExists(frLocalePath)) {
       let frLocaleContent = await readFile(frLocalePath, 'utf8')
-      frLocaleContent = frLocaleContent.replace(/BillMate/g, projectName.toUpperCase())
+      frLocaleContent = frLocaleContent.replace(/SaaSFoundry/g, projectName.toUpperCase())
       await writeFile(frLocalePath, frLocaleContent)
     }
 
@@ -416,6 +418,12 @@ async function createApiApp({
       let authServiceContent = await readFile(authServicePath, 'utf8')
       authServiceContent = authServiceContent.replace(/\/\/ TODO mailer-service-active: /g, '').replace(/console\.log\('sendAccountConfirmationEmail', locale\)\n/g, '')
       await writeFile(authServicePath, authServiceContent)
+
+      // Uncomment invitation sending code in invitation.service.ts
+      const invitationServicePath = `${apiPath}/src/modules/invitation/services/invitation.service.ts`
+      let invitationServiceContent = await readFile(invitationServicePath, 'utf8')
+      invitationServiceContent = invitationServiceContent.replace(/\/\/ TODO mailer-service-active: /g, '').replace(/console\.log\('sendInvitationEmail', locale\)\n/g, '')
+      await writeFile(invitationServicePath, invitationServiceContent)
 
       // Uncomment email configuration in env.service.ts
       const envServicePath = `${apiPath}/src/configs/env/services/env.service.ts`

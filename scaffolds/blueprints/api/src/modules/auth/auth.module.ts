@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport'
 /**
  * Dependencies
  */
+import { Logger } from '@common/services/logger/logger.service'
 import { EnvModule } from '@configs/env/env.module'
 import { EnvConfig } from '@configs/env/services/env.service'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
@@ -35,8 +36,8 @@ import { EmailModule } from '@modules/email/email.module'
     }),
     EmailModule
   ],
-  providers: [AuthService, PrismaService, JwtAuthGuard, JwtStrategy],
+  providers: [Logger, PrismaService, AuthService, JwtStrategy, JwtAuthGuard],
   controllers: [AuthController],
-  exports: [AuthService]
+  exports: [AuthService, JwtAuthGuard, JwtModule, PassportModule]
 })
 export class AuthModule {}

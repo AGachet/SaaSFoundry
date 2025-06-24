@@ -1,5 +1,96 @@
 import { ApiProperty } from '@nestjs/swagger'
 
+export class AccountDto {
+  @ApiProperty({
+    description: 'Account unique identifier',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  id: string
+
+  @ApiProperty({
+    description: 'Account name',
+    example: 'Main account'
+  })
+  name: string
+
+  @ApiProperty({
+    description: 'Account description',
+    example: 'This is the main account for managing finances',
+    required: false,
+    nullable: true
+  })
+  description: string | null
+
+  @ApiProperty({
+    description: 'Account active status',
+    example: true
+  })
+  isActive: boolean
+}
+
+export class OrganizationDto {
+  @ApiProperty({
+    description: 'Organization unique identifier',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  id: string
+
+  @ApiProperty({
+    description: 'Organization name',
+    example: 'ACME Corporation'
+  })
+  name: string
+}
+
+export class PeopleDto {
+  @ApiProperty({
+    description: 'First name',
+    example: 'John',
+    nullable: true
+  })
+  firstname: string | null
+
+  @ApiProperty({
+    description: 'Last name',
+    example: 'Doe',
+    nullable: true
+  })
+  lastname: string | null
+}
+
+export class EntityDto {
+  @ApiProperty({
+    description: 'Entity unique identifier',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  id: string
+
+  @ApiProperty({
+    description: 'Entity name',
+    example: 'Finance Department'
+  })
+  name: string
+
+  @ApiProperty({
+    description: 'Entity active status',
+    example: true
+  })
+  isActive: boolean
+
+  @ApiProperty({
+    description: 'Account ID this entity belongs to',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  accountId: string
+
+  @ApiProperty({
+    description: 'Organization information',
+    type: OrganizationDto,
+    nullable: true
+  })
+  organization: OrganizationDto | null
+}
+
 export class MeResponseDto {
   @ApiProperty({
     description: 'User unique identifier',
@@ -14,18 +105,10 @@ export class MeResponseDto {
   email: string
 
   @ApiProperty({
-    description: 'User first name',
-    example: 'John',
-    nullable: true
+    description: 'User personal information',
+    type: PeopleDto
   })
-  firstname: string | null
-
-  @ApiProperty({
-    description: 'User last name',
-    example: 'Doe',
-    nullable: true
-  })
-  lastname: string | null
+  people: PeopleDto
 
   @ApiProperty({
     description: 'User roles',
@@ -47,6 +130,18 @@ export class MeResponseDto {
     isArray: true
   })
   permissions: string[]
+
+  @ApiProperty({
+    description: 'User accounts',
+    type: [AccountDto]
+  })
+  accounts: AccountDto[]
+
+  @ApiProperty({
+    description: 'User entities',
+    type: [EntityDto]
+  })
+  entities: EntityDto[]
 
   @ApiProperty({
     description: 'Account creation date',

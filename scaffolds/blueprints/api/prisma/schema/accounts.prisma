@@ -1,0 +1,60 @@
+/**
+ * Table : Account
+ */
+model Account {
+  id          String    @id @default(cuid())
+  name        String    @default("Main account")
+  description String?
+  isActive    Boolean   @default(true)            @map("is_active")
+  createdAt   DateTime  @default(now())           @map("created_at")
+  updatedAt   DateTime  @updatedAt                @map("updated_at")
+
+  organizationsLinked OrganizationAccountLink[]
+  invitationsLinked   InvitationAccountLink[]
+  usersLinked         UserAccountLink[]
+  peopleLinked        PeopleAccountLink[]
+
+  entities Entity[]   @relation("EntityAccount")
+  roles    Role[]     @relation("RoleAccount")
+
+  @@index([isActive])
+  @@map("accounts")
+}
+
+/**
+ * Table : Relation User - Account
+ * This establishes a many-to-many relationship between users and accounts
+ */
+model UserAccountLink {
+  userId      String                              @map("user_id")
+  accountId   String                              @map("account_id")
+  createdAt   DateTime  @default(now())           @map("created_at")
+  updatedAt   DateTime  @updatedAt                @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([userId, accountId])
+  @@index([userId])
+  @@index([accountId])
+  @@map("users_accounts_links")
+}
+
+/**
+ * Table : Relation People - Account
+ * This establishes a many-to-many relationship between people and accounts
+ */
+model PeopleAccountLink {
+  peopleId    String                              @map("people_id")
+  accountId   String                              @map("account_id")
+  createdAt   DateTime  @default(now())           @map("created_at")
+  updatedAt   DateTime  @updatedAt                @map("updated_at")
+
+  people      People    @relation(fields: [peopleId], references: [id], onDelete: Cascade)
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([peopleId, accountId])
+  @@index([peopleId])
+  @@index([accountId])
+  @@map("people_accounts_links")
+}

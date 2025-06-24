@@ -96,9 +96,12 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid or missing required fields."
           }
         },
-        "summary": "Register a new user",
+        "summary": "User signup",
         "tags": [
           "Authentication"
         ]
@@ -134,7 +137,7 @@
             "description": "Invalid credentials."
           }
         },
-        "summary": "User login",
+        "summary": "User signin",
         "tags": [
           "Authentication"
         ]
@@ -170,7 +173,7 @@
             "description": "Invalid refresh token."
           }
         },
-        "summary": "User logout",
+        "summary": "User signout",
         "tags": [
           "Authentication"
         ]
@@ -178,7 +181,7 @@
     },
     "/api/auth/request-password-reset": {
       "post": {
-        "description": "Request a password reset. If the email is valid and the account has the necessary permissions, a reset email will be sent.",
+        "description": "Request a password reset. If the email is valid, a reset email will be sent.",
         "operationId": "AuthController_requestPasswordReset",
         "parameters": [],
         "requestBody": {
@@ -193,7 +196,7 @@
         },
         "responses": {
           "200": {
-            "description": "Request processed. If the email is valid and has permission to reset password, reset instructions will be sent.",
+            "description": "Request processed. If the email is valid, reset instructions will be sent.",
             "content": {
               "application/json": {
                 "schema": {
@@ -201,6 +204,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid or missing required fields."
           }
         },
         "summary": "Request password reset",
@@ -247,7 +253,7 @@
     },
     "/api/auth/me": {
       "get": {
-        "description": "Retrieve the profile of the currently authenticated user.",
+        "description": "Retrieve the profile of the currently authenticated user. Requires USER_ACCOUNT_MANAGEMENT module and USER_PROFILE_VIEW_OWN permission.",
         "operationId": "AuthController_getMe",
         "parameters": [],
         "responses": {
@@ -265,11 +271,6 @@
             "description": "Unauthorized - Invalid or missing token."
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Get current user",
         "tags": [
           "Authentication"
@@ -298,15 +299,813 @@
           "Authentication"
         ]
       }
+    },
+    "/api/accounts/{id}": {
+      "get": {
+        "description": "Fetch detailed account information including the 5 most recent users, entities, and roles with counts.",
+        "operationId": "AccountController_fetchAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detailed account information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchAccountDeepResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to get account details"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "summary": "Fetch account details",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/accounts/{id}/users": {
+      "get": {
+        "description": "Fetch users linked to an account with pagination and filtering options.",
+        "operationId": "AccountController_fetchAccountUsers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter users",
+            "schema": {
+              "example": "john",
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by role IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "entityIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by entity IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Order by field",
+            "schema": {
+              "default": "createdAt",
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "name",
+                "lastname"
+              ]
+            }
+          },
+          {
+            "name": "includeDirectUsers",
+            "required": false,
+            "in": "query",
+            "description": "Include users linked directly to the account",
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchAccountUsersResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to fetch account users"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "summary": "Fetch account users",
+        "tags": [
+          "Accounts"
+        ]
+      },
+      "patch": {
+        "description": "Update the users linked to an account.",
+        "operationId": "AccountController_updateAccountUsers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountUsersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The users have been successfully updated for the account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAccountUsersResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to update account users"
+          },
+          "401": {
+            "description": "User does not have permission to manage the account"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "summary": "Update account users",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/accounts/{id}/entities": {
+      "get": {
+        "description": "Fetch entities linked to an account with pagination and filtering options.",
+        "operationId": "AccountController_fetchAccountEntities",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter entities",
+            "schema": {
+              "example": "company",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by user IDs (entities with these users)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeInactiveUsers",
+            "required": false,
+            "in": "query",
+            "description": "Include users that are not active",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Order by field",
+            "schema": {
+              "default": "createdAt",
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "name",
+                "organizationName"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of entities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchAccountEntitiesResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to fetch account entities"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "summary": "Fetch account entities",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/accounts/{id}/roles": {
+      "get": {
+        "description": "Fetch roles linked to an account with pagination and filtering options.",
+        "operationId": "AccountController_fetchAccountRoles",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter roles",
+            "schema": {
+              "example": "admin",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Order by field",
+            "schema": {
+              "default": "createdAt",
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchAccountRolesResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to fetch account roles"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "summary": "Fetch account roles",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/accounts/{id}/status": {
+      "patch": {
+        "description": "Activate or deactivate an account that the user has access to.",
+        "operationId": "AccountController_updateAccountStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAccountStatusResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to update account status"
+          },
+          "401": {
+            "description": "User does not have permission to manage the account"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        },
+        "summary": "Update account status",
+        "tags": [
+          "Accounts"
+        ]
+      }
+    },
+    "/api/organizations/{id}": {
+      "get": {
+        "description": "Fetch detailed account information.",
+        "operationId": "OrganizationController_fetchOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organization details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchOrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to get organization details"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "summary": "Fetch organization details",
+        "tags": [
+          "Organizations"
+        ]
+      },
+      "patch": {
+        "description": "Update the organization details.",
+        "operationId": "OrganizationController_updateOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The organization has been successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchOrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to update organization"
+          },
+          "401": {
+            "description": "User does not have permission to update organizations"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "summary": "Update organization",
+        "tags": [
+          "Organizations"
+        ]
+      }
+    },
+    "/api/organizations": {
+      "post": {
+        "description": "Create a new organization for an account.",
+        "operationId": "OrganizationController_createOrganization",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The organization has been successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchOrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to create organization"
+          },
+          "401": {
+            "description": "User does not have permission to create organizations"
+          }
+        },
+        "summary": "Create organization",
+        "tags": [
+          "Organizations"
+        ]
+      }
+    },
+    "/api/entities": {
+      "post": {
+        "description": "Create a new entity and link it to an account and organization.",
+        "operationId": "EntitiesController_createEntity",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEntityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The entity has been successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEntityResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to create entity"
+          },
+          "401": {
+            "description": "User does not have permission to create entities"
+          }
+        },
+        "summary": "Create entity",
+        "tags": [
+          "Entities"
+        ]
+      }
+    },
+    "/api/entities/{id}/users": {
+      "patch": {
+        "description": "Update the users linked to an entity.",
+        "operationId": "EntitiesController_updateEntityUsers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Entity ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEntityUsersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The users have been successfully updated for the entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEntityUsersResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to update entity users"
+          },
+          "401": {
+            "description": "User does not have permission to manage entity users"
+          }
+        },
+        "summary": "Update entity users",
+        "tags": [
+          "Entities"
+        ]
+      }
+    },
+    "/api/invitations": {
+      "post": {
+        "description": "Create an invitation for a new user to join an account or entity.",
+        "operationId": "InvitationController_createInvitation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invitation created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - user does not have required permissions"
+          }
+        },
+        "summary": "Create invitation",
+        "tags": [
+          "Invitations"
+        ]
+      },
+      "get": {
+        "description": "Get all invitations sent by the authenticated user.",
+        "operationId": "InvitationController_getUserInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of invitations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInvitationsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Get user invitations",
+        "tags": [
+          "Invitations"
+        ]
+      }
+    },
+    "/api/invitations/accept": {
+      "post": {
+        "description": "Accept an invitation and complete account setup.",
+        "operationId": "InvitationController_acceptInvitation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invitation accepted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignInResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "404": {
+            "description": "Invitation not found or expired"
+          }
+        },
+        "summary": "Accept invitation",
+        "tags": [
+          "Invitations"
+        ]
+      }
     }
   },
   "info": {
-    "title": "BillMate API",
+    "title": "SaaSFoundry API",
     "description": "An open-source solution for managing clients, invoices, and financial tasks.",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "contact": {
-      "name": "BillMate Team",
-      "url": "https://github.com/agachet/billmate-backend",
+      "name": "SaaSFoundry Team",
+      "url": "https://github.com/agachet/saasfoundry",
       "email": "anthony.gachet@diamondforge.fr"
     },
     "license": {
@@ -330,15 +1129,13 @@
         "properties": {
           "firstname": {
             "type": "string",
-            "description": "First name of the user",
-            "example": "John",
-            "minLength": 1
+            "description": "First name of the user (optional during signup)",
+            "example": "John"
           },
           "lastname": {
             "type": "string",
-            "description": "Last name of the user",
-            "example": "Doe",
-            "minLength": 1
+            "description": "Last name of the user (optional during signup)",
+            "example": "Doe"
           },
           "email": {
             "type": "string",
@@ -353,11 +1150,15 @@
             "minLength": 6,
             "maxLength": 40,
             "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$"
+          },
+          "locale": {
+            "type": "string",
+            "description": "User locale preference",
+            "example": "EN",
+            "default": "EN"
           }
         },
         "required": [
-          "firstname",
-          "lastname",
           "email",
           "password"
         ]
@@ -401,6 +1202,22 @@
             "description": "Account confirmation token (only required when validating a new account)",
             "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
             "maxLength": 500
+          },
+          "firstname": {
+            "type": "string",
+            "description": "First name (required during first login)",
+            "example": "John"
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Last name (required during first login)",
+            "example": "Doe"
+          },
+          "locale": {
+            "type": "string",
+            "description": "User locale preference",
+            "example": "EN",
+            "default": "EN"
           }
         },
         "required": [
@@ -521,6 +1338,118 @@
           "message"
         ]
       },
+      "PeopleDto": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "object",
+            "description": "First name",
+            "example": "John",
+            "nullable": true
+          },
+          "lastname": {
+            "type": "object",
+            "description": "Last name",
+            "example": "Doe",
+            "nullable": true
+          }
+        },
+        "required": [
+          "firstname",
+          "lastname"
+        ]
+      },
+      "AccountDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account unique identifier",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account name",
+            "example": "Main account"
+          },
+          "description": {
+            "type": "object",
+            "description": "Account description",
+            "example": "This is the main account for managing finances",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Account active status",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive"
+        ]
+      },
+      "OrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization unique identifier",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization name",
+            "example": "ACME Corporation"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "EntityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entity unique identifier",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Entity name",
+            "example": "Finance Department"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Entity active status",
+            "example": true
+          },
+          "accountId": {
+            "type": "string",
+            "description": "Account ID this entity belongs to",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "organization": {
+            "description": "Organization information",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive",
+          "accountId",
+          "organization"
+        ]
+      },
       "MeResponseDto": {
         "type": "object",
         "properties": {
@@ -534,17 +1463,13 @@
             "description": "User email address",
             "example": "john.doe@example.com"
           },
-          "firstname": {
-            "type": "object",
-            "description": "User first name",
-            "example": "John",
-            "nullable": true
-          },
-          "lastname": {
-            "type": "object",
-            "description": "User last name",
-            "example": "Doe",
-            "nullable": true
+          "people": {
+            "description": "User personal information",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeopleDto"
+              }
+            ]
           },
           "roles": {
             "description": "User roles",
@@ -581,6 +1506,20 @@
               "type": "array"
             }
           },
+          "accounts": {
+            "description": "User accounts",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountDto"
+            }
+          },
+          "entities": {
+            "description": "User entities",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityDto"
+            }
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -591,11 +1530,12 @@
         "required": [
           "userId",
           "email",
-          "firstname",
-          "lastname",
+          "people",
           "roles",
           "modules",
           "permissions",
+          "accounts",
+          "entities",
           "createdAt"
         ]
       },
@@ -639,6 +1579,884 @@
           "roles",
           "modules",
           "permissions"
+        ]
+      },
+      "CollectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Total number of items in the collection"
+          },
+          "values": {
+            "description": "Collection items",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "values"
+        ]
+      },
+      "FetchAccountDeepResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account ID",
+            "example": "cmagp5dy70001t84nzb9t39j6"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account name",
+            "example": "Acme Corp"
+          },
+          "description": {
+            "type": "object",
+            "description": "Account description",
+            "example": "Main account for Acme Corporation"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Account active status",
+            "example": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation date",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update date",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "users": {
+            "description": "Account users",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionResponseDto"
+              }
+            ]
+          },
+          "entities": {
+            "description": "Account entities",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionResponseDto"
+              }
+            ]
+          },
+          "roles": {
+            "description": "Account roles",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive",
+          "createdAt",
+          "updatedAt",
+          "users",
+          "entities",
+          "roles"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "pagination": {
+            "type": "object",
+            "description": "Pagination information",
+            "example": {
+              "current": 1,
+              "limit": 10,
+              "total": 5
+            }
+          },
+          "count": {
+            "type": "number",
+            "description": "Total number of items",
+            "example": 42
+          }
+        },
+        "required": [
+          "pagination",
+          "count"
+        ]
+      },
+      "FetchAccountUsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Users data",
+            "items": {
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "description": "Pagination metadata",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMetaDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "FetchAccountEntitiesResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "List of entities",
+            "items": {
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "description": "Pagination metadata",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMetaDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "FetchAccountRolesResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "List of roles",
+            "items": {
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "description": "Pagination metadata",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMetaDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "UpdateAccountStatusDto": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "New account status",
+            "example": true
+          }
+        },
+        "required": [
+          "isActive"
+        ]
+      },
+      "UpdateAccountStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account name"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Account active status"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive"
+        ]
+      },
+      "UpdateAccountUsersDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "description": "List of user IDs to associate with the account",
+            "example": [
+              "cmagp5dy70001t84nzb9t39j6",
+              "cmagp5dy70001t84nzb9t39j7"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "userIds"
+        ]
+      },
+      "AccountUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email",
+            "example": "john.doe@example.com"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "User active status",
+            "example": true
+          },
+          "people": {
+            "description": "User personal information",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeopleDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "isActive",
+          "people"
+        ]
+      },
+      "UpdateAccountUsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the account",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account name"
+          },
+          "users": {
+            "description": "List of users linked to the account",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountUserDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "users"
+        ]
+      },
+      "FetchOrganizationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization unique identifier",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization name",
+            "example": "Acme Corporation"
+          },
+          "type": {
+            "type": "string",
+            "description": "Organization type",
+            "example": "COMPANY",
+            "enum": [
+              "COMPANY",
+              "ASSOCIATION",
+              "COMMUNITY"
+            ]
+          },
+          "description": {
+            "type": "object",
+            "description": "Organization description",
+            "example": "A leading technology company",
+            "nullable": true
+          },
+          "website": {
+            "type": "object",
+            "description": "Organization website",
+            "example": "https://www.acme.com",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Organization creation date",
+            "example": "2024-03-06T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Organization last update date",
+            "example": "2024-03-06T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Organization name",
+            "example": "Acme Corporation"
+          },
+          "type": {
+            "type": "string",
+            "description": "Organization type",
+            "example": "COMPANY",
+            "enum": [
+              "COMPANY",
+              "ASSOCIATION",
+              "COMMUNITY"
+            ]
+          },
+          "accountId": {
+            "type": "string",
+            "description": "Account ID that this organization belongs to",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "description": {
+            "type": "string",
+            "description": "Organization description",
+            "example": "A leading technology company"
+          },
+          "website": {
+            "type": "string",
+            "description": "Organization website",
+            "example": "https://www.acme.com"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "accountId"
+        ]
+      },
+      "UpdateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Organization name",
+            "example": "Acme Corporation"
+          },
+          "type": {
+            "type": "string",
+            "description": "Organization type",
+            "example": "COMPANY",
+            "enum": [
+              "COMPANY",
+              "ASSOCIATION",
+              "COMMUNITY"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Organization description",
+            "example": "A leading technology company"
+          },
+          "website": {
+            "type": "string",
+            "description": "Organization website",
+            "example": "https://www.acme.com"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      },
+      "CreateEntityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the entity",
+            "example": "Finance Department"
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the entity",
+            "example": "Handles all financial operations"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "The ID of the organization this entity belongs to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "accountId": {
+            "type": "string",
+            "description": "The ID of the account this entity belongs to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        },
+        "required": [
+          "name",
+          "organizationId",
+          "accountId"
+        ]
+      },
+      "EntityUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email",
+            "example": "john.doe@example.com"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "User active status",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "isActive"
+        ]
+      },
+      "EntityRoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Role ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Role name",
+            "example": "admin"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Role active status",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive"
+        ]
+      },
+      "CreateEntityResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the entity",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the entity",
+            "example": "Finance Department"
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the entity",
+            "example": "Handles all financial operations"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the entity is active",
+            "example": true
+          },
+          "organization": {
+            "type": "object",
+            "description": "The organization this entity belongs to"
+          },
+          "users": {
+            "description": "The users associated with this entity",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityUserDto"
+            }
+          },
+          "roles": {
+            "description": "The roles associated with this entity",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityRoleDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date and time when the entity was created",
+            "example": "2023-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date and time when the entity was last updated",
+            "example": "2023-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateEntityUsersDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "description": "List of user IDs to associate with the entity",
+            "example": [
+              "cmagp5dy70001t84nzb9t39j6",
+              "cmagp5dy70001t84nzb9t39j7"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "userIds"
+        ]
+      },
+      "UpdateEntityUsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the entity",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "description": "Entity name"
+          },
+          "users": {
+            "description": "List of users linked to the entity",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityUserDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "users"
+        ]
+      },
+      "CreateInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of the person to invite",
+            "example": "john.doe@example.com"
+          },
+          "firstname": {
+            "type": "string",
+            "description": "Optional first name of the invited person",
+            "example": "John"
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Optional last name of the invited person",
+            "example": "Doe"
+          },
+          "roleIds": {
+            "description": "Optional list of role IDs to assign to the invited user",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "accountIds": {
+            "description": "Optional list of account IDs to directly link the invited user to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "entityIds": {
+            "description": "Optional list of entity IDs to link the invited user to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "locale": {
+            "type": "string",
+            "description": "Preferred locale for the invited user",
+            "enum": [
+              "EN",
+              "FR"
+            ],
+            "default": "FR"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "InvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Friendly message indicating the status of the invitation",
+            "example": "Invitation sent successfully. The user will receive an email with instructions to join."
+          },
+          "invitationToken": {
+            "type": "string",
+            "description": "Invitation token (only visible in development and test environments)",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "InvitationAccountDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account ID",
+            "example": "clb3x5jqw0000356grby2a5bj"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account name",
+            "example": "Main account"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "InvitationEntityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entity ID",
+            "example": "clb3x5jqw0000356grby2a5bj"
+          },
+          "name": {
+            "type": "string",
+            "description": "Entity name",
+            "example": "Entity name"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "InvitationRoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Role ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Role name",
+            "example": "Admin"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "InvitationListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Invitation ID",
+            "example": "clb3x5jqw0000356grby2a5bj"
+          },
+          "inviterUserId": {
+            "type": "string",
+            "description": "Inviter user ID",
+            "example": "clb3x5jqw0000356grby2a5bj"
+          },
+          "inviteeUserId": {
+            "type": "string",
+            "description": "Invitee user ID",
+            "example": "clb3x5jqw0000356grby2a5bj"
+          },
+          "inviteeUserEmail": {
+            "type": "string",
+            "description": "Invitee email",
+            "example": "user@example.com"
+          },
+          "status": {
+            "type": "string",
+            "description": "Invitation status",
+            "example": "SENT",
+            "enum": [
+              "SENT",
+              "EXPIRED",
+              "ACCEPTED"
+            ]
+          },
+          "invitedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Invitation date",
+            "example": "2023-01-01T00:00:00.000Z"
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Acceptance date",
+            "example": "2023-01-01T00:00:00.000Z"
+          },
+          "accounts": {
+            "description": "Accounts linked to the invitation",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationAccountDto"
+            }
+          },
+          "entities": {
+            "description": "Entities linked to the invitation",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationEntityDto"
+            }
+          },
+          "roles": {
+            "description": "Roles linked to the invitation",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationRoleDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "inviterUserId",
+          "inviteeUserEmail",
+          "status",
+          "invitedAt",
+          "accounts",
+          "entities",
+          "roles"
+        ]
+      },
+      "ListInvitationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "invitations": {
+            "description": "List of invitations",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationListItemDto"
+            }
+          }
+        },
+        "required": [
+          "invitations"
+        ]
+      },
+      "AcceptInvitationDto": {
+        "type": "object",
+        "properties": {
+          "invitationToken": {
+            "type": "string",
+            "description": "Invitation token received by email",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for the new account",
+            "example": "SecureP@ssword123"
+          },
+          "firstname": {
+            "type": "string",
+            "description": "First name of the user (can override the suggested value)",
+            "example": "John"
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Last name of the user (can override the suggested value)",
+            "example": "Doe"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Preferred locale for the user (can override the suggested value)",
+            "enum": [
+              "EN",
+              "FR"
+            ],
+            "default": "FR"
+          }
+        },
+        "required": [
+          "invitationToken",
+          "password"
         ]
       }
     }

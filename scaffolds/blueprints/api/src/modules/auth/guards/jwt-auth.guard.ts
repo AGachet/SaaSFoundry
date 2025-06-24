@@ -1,14 +1,16 @@
 /**
  * Resources
  */
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common'
+import { ExecutionContext, Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 
 /**
  * Dependencies
  */
-import { AuthService } from '@modules/auth/services/auth.service'
 import { Logger } from '@common/services/logger/logger.service'
+import { PrismaService } from '@configs/prisma/services/prisma.service'
+import { AuthService } from '@modules/auth/services/auth.service'
 
 /**
  * Type
@@ -19,12 +21,21 @@ import type { Request, Response } from 'express'
  * Declaration
  */
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class JwtAuthGuard extends AuthGuard('jwt') implements OnModuleInit {
+  private authService: AuthService
+  private prismaService: PrismaService
+
   constructor(
-    private readonly authService: AuthService,
+    private readonly moduleRef: ModuleRef,
     private readonly logger: Logger
   ) {
     super()
+  }
+
+  async onModuleInit() {
+    // Get the service at the module initialization to avoid circular dependencies
+    this.authService = this.moduleRef.get(AuthService, { strict: false })
+    this.prismaService = this.moduleRef.get(PrismaService, { strict: false })
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -47,10 +58,41 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     try {
+      if (!this.authService) {
+        try {
+          this.authService = this.moduleRef.get(AuthService, { strict: false })
+          this.prismaService = this.moduleRef.get(PrismaService, { strict: false })
+        } catch (e) {
+          this.logger.error(`Failed to get required services: ${e instanceof Error ? e.message : 'Unknown error'}`, 'JwtAuthGuard')
+          throw new Error('Required services not available')
+        }
+      }
+
       const tokens = await this.authService.refreshTokens(refreshToken)
+
+      // Define the cookies with the new tokens
       this.authService.setAuthCookies(response, tokens.accessToken, tokens.refreshToken)
 
-      return (await super.canActivate(context)) as boolean
+      // Extract the payload from the access token
+      const payload = this.authService.decodeToken(tokens.accessToken)
+
+      // Get the user from the payload and set it directly in the request
+      if (payload && payload.sub) {
+        const user = await this.prismaService.user.findUnique({
+          where: { id: payload.sub }
+        })
+
+        if (!user) {
+          this.logger.warn(`User not found after token refresh: ${payload.sub}`, 'JwtAuthGuard')
+          throw new UnauthorizedException('User not found')
+        }
+
+        // Define the user in the request
+        request.user = user
+        return true
+      }
+
+      throw new UnauthorizedException('Invalid token payload')
     } catch (error) {
       this.logger.warn(`Failed to refresh token for ${request.ip}: ${error instanceof Error ? error.message : 'Unknown error'}`, 'JwtAuthGuard')
       throw new UnauthorizedException('Token refresh failed')

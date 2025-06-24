@@ -1,8 +1,9 @@
 import { Locale } from '@prisma/client'
 import { TranslationService } from '../../services/translation.service'
 
-export const getAccountConfirmationHtmlTemplate = (confirmationUrl: string, translationService: TranslationService, locale: Locale, firstName: string): string => {
+export const getAccountConfirmationHtmlTemplate = (confirmationUrl: string, translationService: TranslationService, locale: Locale, firstName?: string): string => {
   const t = translationService.getTranslation(locale, 'accountConfirmation')
+  const greeting = firstName ? `${t.greeting} ${firstName},` : `${t.greeting},`
 
   return `
 <!DOCTYPE html>
@@ -15,7 +16,7 @@ export const getAccountConfirmationHtmlTemplate = (confirmationUrl: string, tran
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <h1 style="color: #2c3e50; text-align: center;">${t.title}</h1>
 
-    <p>Bonjour ${firstName},</p>
+    <p>${greeting}</p>
 
     <p>${t.body}</p>
 

@@ -5,7 +5,6 @@ readonly ENV_TEST_FILE=".env.test"
 readonly SQL_FUNCTIONS_DIR="prisma/sql/functions"
 readonly SQL_TRIGGERS_DIR="prisma/sql/triggers"
 readonly SQL_DATASETS_DIR="prisma/sql/datasets"
-readonly SEED_TEST_FILE="prisma/seed-test.ts"
 
 # 2. Create task-specific functions
 load_env_variables() {
@@ -64,6 +63,7 @@ apply_schema() {
 apply_sql_files() {
     local dir=$1
     local type=$2
+    local debug=${3:-false}
 
     if [ -d "$dir" ] && [ "$(ls -A $dir)" ]; then
         echo "• Applying SQL ${type}..."
@@ -71,27 +71,26 @@ apply_sql_files() {
             if [ -f "$file" ]; then
                 filename=$(basename "$file")
                 echo "  ↳ Processing: $filename"
-                if psql "$DATABASE_URL" -f "$file" > /dev/null 2>&1; then
-                    echo "    ✓ Applied successfully"
+                if [ "$debug" = true ]; then
+                    # Run with debug output for E2E datasets
+                    echo "    🔍 Running with debug output"
+                    if psql "$DATABASE_URL" -f "$file"; then
+                        echo "    ✓ Applied successfully"
+                    else
+                        echo "    ❌ Failed to apply"
+                        exit 1
+                    fi
                 else
-                    echo "    ❌ Failed to apply"
-                    exit 1
+                    # Regular silent run
+                    if psql "$DATABASE_URL" -f "$file" > /dev/null 2>&1; then
+                        echo "    ✓ Applied successfully"
+                    else
+                        echo "    ❌ Failed to apply"
+                        exit 1
+                    fi
                 fi
             fi
         done
-    fi
-}
-
-apply_seed() {
-    if [ -f "${SEED_TEST_FILE}" ]; then
-        echo "• Applying test data..."
-        echo "  ↳ Running seed script"
-        if npx ts-node "${SEED_TEST_FILE}" > /dev/null 2>&1; then
-            echo "  ✓ Test data applied"
-        else
-            echo "  ❌ Failed to apply test data"
-            exit 1
-        fi
     fi
 }
 
@@ -119,8 +118,7 @@ main() {
     apply_schema
     apply_sql_files "${SQL_FUNCTIONS_DIR}" "functions"
     apply_sql_files "${SQL_TRIGGERS_DIR}" "triggers"
-    apply_sql_files "${SQL_DATASETS_DIR}" "datasets"
-    apply_seed
+    apply_sql_files "${SQL_DATASETS_DIR}" "datasets" #true # Enabling debug by uncommenting [true]
 
     echo ""
     echo "✨ Test database initialized successfully!"

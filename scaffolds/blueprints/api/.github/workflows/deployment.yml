@@ -316,6 +316,7 @@ jobs:
           JWT_SECRET_REFRESH=\"${{ secrets.JWT_SECRET_REFRESH }}\"
           JWT_SECRET_CONFIRM_ACCOUNT=\"${{ secrets.JWT_SECRET_CONFIRM_ACCOUNT }}\"
           JWT_SECRET_RESET_PASSWORD=\"${{ secrets.JWT_SECRET_RESET_PASSWORD }}\"
+          JWT_SECRET_INVITATION=\"${{ secrets.JWT_SECRET_INVITATION }}\"
 
           # Mail Service Configuration
           # MAILERSEND_API_KEY=""

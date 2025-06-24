@@ -13,8 +13,8 @@ import 'dotenv/config'
 import { GlobalExceptionFilter } from '@common/filters/global-exception.filter'
 import { Logger } from '@common/services/logger/logger.service'
 import { EnvConfig } from '@configs/env/services/env.service'
+import { ApiDocsService } from '@modules/api-docs/services/api-docs.service'
 import { AppModule } from './app.module'
-import { ApiDocsService } from './modules/api-docs/services/api-docs.service'
 
 /**
  * Declaration

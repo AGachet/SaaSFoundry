@@ -1,13 +1,14 @@
 import { Locale } from '@prisma/client'
 import { TranslationService } from '../../services/translation.service'
 
-export const getAccountConfirmationTextTemplate = (confirmationUrl: string, translationService: TranslationService, locale: Locale, firstName: string): string => {
+export const getAccountConfirmationTextTemplate = (confirmationUrl: string, translationService: TranslationService, locale: Locale, firstName?: string): string => {
   const t = translationService.getTranslation(locale, 'accountConfirmation')
+  const greeting = firstName ? `${t.greeting} ${firstName},` : `${t.greeting},`
 
   return `
 ${t.title}
 
-Bonjour ${firstName},
+${greeting}
 
 ${t.body}
 

@@ -1,10 +1,9 @@
 /**
  * Resources
  */
-import { Injectable, Logger, INestApplication } from '@nestjs/common'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { writeFileSync, existsSync, mkdirSync } from 'fs'
-import { OpenAPIObject } from '@nestjs/swagger'
+import { INestApplication, Injectable, Logger } from '@nestjs/common'
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
 /**
@@ -74,7 +73,7 @@ export class ApiDocsService {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BillMate API Documentation</title>
+        <title>SaaSFoundry API Documentation</title>
 
         <!-- Stoplight Elements styles -->
         <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">

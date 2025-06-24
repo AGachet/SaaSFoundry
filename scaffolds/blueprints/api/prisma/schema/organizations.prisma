@@ -1,0 +1,154 @@
+/**
+ * Enums
+ */
+enum OrganizationType {
+  COMPANY
+  ASSOCIATION
+  COMMUNITY
+
+  @@map("organization_type")
+}
+
+/**
+ * Table : Organization
+ */
+model Organization {
+  id          String        @id @default(cuid())
+  name        String        @db.VarChar(100)
+  type        OrganizationType
+  description String?       @db.VarChar(255)
+  website     String?       @db.VarChar(100)
+  createdAt   DateTime      @default(now())          @map("created_at")
+  updatedAt   DateTime      @updatedAt               @map("updated_at")
+
+  entity  Entity?    @relation("EntityProfile")
+
+  entitiesLinked OrganizationEntityLink[]
+  accountsLinked OrganizationAccountLink[]
+
+  @@map("organizations")
+}
+
+/**
+ * Table : Entity
+ */
+model Entity {
+  id                  String    @id @default(cuid())
+  name                String    @db.VarChar(100)
+  description         String?   @db.VarChar(255)
+  accountId           String
+  organizationId      String?   @unique @map("organization_id")
+  isActive            Boolean   @default(true)            @map("is_active")
+  createdAt           DateTime  @default(now())           @map("created_at")
+  updatedAt           DateTime  @updatedAt                @map("updated_at")
+
+  account             Account        @relation("EntityAccount",fields: [accountId], references: [id], onDelete: Cascade)
+  organization        Organization?  @relation("EntityProfile", fields: [organizationId], references: [id], onDelete: SetNull)
+
+  users               UserEntityLink[]
+  roles               EntityRoleLink[]
+  peoples             PeopleEntityLink[]
+  organizationsLinked OrganizationEntityLink[]
+  invitationsLinked   InvitationEntityLink[]
+
+  @@index([organizationId])
+  @@index([accountId])
+  @@index([isActive])
+  @@map("entities")
+}
+
+/**
+ * Table : Relation User - Entity
+ * This establishes a many-to-many relationship between users and entities
+ */
+model UserEntityLink {
+  userId      String                              @map("user_id")
+  entityId    String                              @map("entity_id")
+  createdAt   DateTime  @default(now())           @map("created_at")
+  updatedAt   DateTime  @updatedAt                @map("updated_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entity      Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, entityId])
+  @@index([userId])
+  @@index([entityId])
+  @@map("users_entities_links")
+}
+
+/**
+ * Table : Relation Entity - Role
+ * This establishes a many-to-many relationship between entities and roles
+ */
+model EntityRoleLink {
+  entityId    String                              @map("entity_id")
+  roleId      Int                                 @map("role_id")
+  createdAt   DateTime  @default(now())           @map("created_at")
+  updatedAt   DateTime  @updatedAt                @map("updated_at")
+
+  entity      Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  role        Role      @relation(fields: [roleId], references: [id])
+
+  @@id([entityId, roleId])
+  @@index([entityId])
+  @@index([roleId])
+  @@map("entities_roles_links")
+}
+
+/**
+ * Table : Relation Organization - Entity
+ * This establishes a many-to-many relationship between organizations and entities
+ * which allows entities to be related to multiple organizations beyond their primary one (Profile organization)
+ */
+model OrganizationEntityLink {
+  organizationId  String                            @map("organization_id")
+  entityId        String                            @map("entity_id")
+  createdAt       DateTime  @default(now())         @map("created_at")
+  updatedAt       DateTime  @updatedAt              @map("updated_at")
+
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  entity          Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@id([organizationId, entityId])
+  @@index([organizationId])
+  @@index([entityId])
+  @@map("organizations_entities_links")
+}
+
+/**
+ * Table : Relation Organization - Account
+ * This establishes a many-to-many relationship between organizations and accounts
+ */
+model OrganizationAccountLink {
+  organizationId  String                              @map("organization_id")
+  accountId       String                              @map("account_id")
+  createdAt       DateTime  @default(now())           @map("created_at")
+  updatedAt       DateTime  @updatedAt                @map("updated_at")
+
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  account         Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([organizationId, accountId])
+  @@index([organizationId])
+  @@index([accountId])
+  @@map("organizations_accounts_links")
+}
+
+/**
+ * Table : Relation Entity - People
+ * This establishes a many-to-many relationship between entities and people
+ */
+model PeopleEntityLink {
+  peopleId String @map("people_id")
+  entityId String @map("entity_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  people People @relation(fields: [peopleId], references: [id], onDelete: Cascade)
+  entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@id([peopleId, entityId])
+  @@index([peopleId])
+  @@index([entityId])
+  @@map("peoples_entities_links")
+}

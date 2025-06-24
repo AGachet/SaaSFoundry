@@ -40,6 +40,24 @@ export class SignInDto {
   confirmAccountToken?: string
 
   @ApiPropertyOptional({
+    description: 'First name (required during first login)',
+    example: 'John',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  firstname?: string
+
+  @ApiPropertyOptional({
+    description: 'Last name (required during first login)',
+    example: 'Doe',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  lastname?: string
+
+  @ApiPropertyOptional({
     description: 'User locale preference',
     example: 'EN',
     default: 'EN'

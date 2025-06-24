@@ -1,10 +1,10 @@
 export const openApiConfig = {
-  title: 'BillMate API',
+  title: 'SaaSFoundry API',
   description: 'An open-source solution for managing clients, invoices, and financial tasks.',
   version: process.env.npm_package_version || '1.0.0',
   contact: {
-    name: 'BillMate Team',
-    url: 'https://github.com/agachet/billmate-backend',
+    name: 'SaaSFoundry Team',
+    url: 'https://github.com/AGachet/SaaSFoundry',
     email: 'anthony.gachet@diamondforge.fr'
   },
   license: {

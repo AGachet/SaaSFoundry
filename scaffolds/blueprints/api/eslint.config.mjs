@@ -1,6 +1,6 @@
+import jsoncPlugin from 'eslint-plugin-jsonc'
 import prettier from 'eslint-plugin-prettier'
 import globals from 'globals'
-import jsoncPlugin from 'eslint-plugin-jsonc'
 import tseslint from 'typescript-eslint'
 import noVersionPrefixPlugin from './eslint-rules/no-version-prefix.mjs'
 

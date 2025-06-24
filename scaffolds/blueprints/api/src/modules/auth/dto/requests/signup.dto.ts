@@ -9,23 +9,23 @@ import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'cl
  * Declaration
  */
 export class SignUpDto {
-  @ApiProperty({
-    description: 'First name of the user',
+  @ApiPropertyOptional({
+    description: 'First name of the user (optional during signup)',
     example: 'John',
-    minLength: 1
+    required: false
   })
   @IsString()
-  @MinLength(1, { message: 'First name is required' })
-  firstname: string
+  @IsOptional()
+  firstname?: string
 
-  @ApiProperty({
-    description: 'Last name of the user',
+  @ApiPropertyOptional({
+    description: 'Last name of the user (optional during signup)',
     example: 'Doe',
-    minLength: 1
+    required: false
   })
   @IsString()
-  @MinLength(1, { message: 'Last name is required' })
-  lastname: string
+  @IsOptional()
+  lastname?: string
 
   @ApiProperty({
     description: 'Email address of the user',

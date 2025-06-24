@@ -10,10 +10,13 @@ import request from 'supertest'
 /**
  * Dependencies
  */
+import { AccountAccessModule } from '@common/services/account-access/account-access.module'
 import { LoggerModule } from '@common/services/logger/logger.module'
+import { cleanupTestUser } from '@common/tests/e2e/utils/setup-test-user'
 import { EnvModule } from '@configs/env/env.module'
 import { PrismaModule } from '@configs/prisma/prisma.module'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
+import { AccountsModule } from '@modules/accounts/accounts.module'
 import { AuthModule } from '@modules/auth/auth.module'
 
 // Load test environment variables
@@ -33,14 +36,14 @@ jest.mock('@common/services/logger/logger.service', () => ({
 }))
 
 /**
- * Declaration
+ * Test Suite
  */
 describe('Auth Module (e2e)', () => {
   let app: INestApplication
   let prismaService: PrismaService
   let agent: ReturnType<typeof request.agent>
 
-  // Test user data
+  // Test user data - only for authentication tests
   const testUser = {
     email: 'batman@diamondforge.fr',
     password: 'brucewaynepassword',
@@ -50,13 +53,14 @@ describe('Auth Module (e2e)', () => {
 
   // Variables to store tokens and user ID
   let userId: string
+  let accountId: string
   let confirmAccountToken: string
   let resetPasswordToken: string
 
   beforeAll(async () => {
     // Create NestJS application
     const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule, LoggerModule, EnvModule, PrismaModule]
+      imports: [AuthModule, AccountsModule, LoggerModule, EnvModule, PrismaModule, AccountAccessModule]
     }).compile()
 
     app = moduleRef.createNestApplication()
@@ -72,23 +76,14 @@ describe('Auth Module (e2e)', () => {
   })
 
   afterAll(async () => {
-    // Clean up database after tests
-    const user = await prismaService.user.findUnique({
-      where: { email: testUser.email }
-    })
-
-    if (user) {
-      // Delete user (all related records will be deleted automatically)
-      await prismaService.user.delete({
-        where: { id: user.id }
-      })
-    }
+    // Clean up test user with the common utility
+    await cleanupTestUser(prismaService, testUser.email)
 
     await prismaService.$disconnect()
     await app.close()
   })
 
-  describe('Complete authentication flow', () => {
+  describe('Complete authentication flow with account creation', () => {
     it('Should create a new user (signup)', async () => {
       const response = await agent.post('/api/auth/signup').send(testUser).expect(200)
 
@@ -131,6 +126,8 @@ describe('Auth Module (e2e)', () => {
         .send({
           email: testUser.email,
           password: testUser.password,
+          firstname: testUser.firstname,
+          lastname: testUser.lastname,
           confirmAccountToken
         })
         .expect(200)
@@ -144,6 +141,21 @@ describe('Auth Module (e2e)', () => {
       })
 
       expect(user?.isActive).toBe(true)
+
+      // check that an account has been created for the user
+      const accounts = await prismaService.account.findMany({
+        where: {
+          usersLinked: {
+            some: {
+              userId
+            }
+          }
+        }
+      })
+
+      expect(accounts.length).toBeGreaterThan(0)
+      // store the ID of the first account for next tests
+      accountId = accounts[0].id
     })
 
     it('Should logout the user (signout)', async () => {
@@ -202,15 +214,58 @@ describe('Auth Module (e2e)', () => {
       const response = await agent.get('/api/auth/me').expect(200)
 
       expect(response.body).toHaveProperty('userId')
-      expect(response.body).toHaveProperty('firstname')
-      expect(response.body).toHaveProperty('lastname')
+      expect(response.body).toHaveProperty('people')
+      expect(response.body.people).toHaveProperty('firstname')
+      expect(response.body.people).toHaveProperty('lastname')
       expect(response.body).toHaveProperty('roles')
+      expect(response.body).toHaveProperty('accounts')
+      expect(response.body).toHaveProperty('permissions')
+      expect(response.body).toHaveProperty('modules')
 
       expect(response.body.userId).toBe(userId)
-      expect(response.body.firstname).toBe(testUser.firstname)
-      expect(response.body.lastname).toBe(testUser.lastname)
+      expect(response.body.people.firstname).toBe(testUser.firstname)
+      expect(response.body.people.lastname).toBe(testUser.lastname)
       expect(response.body.email).toBe(testUser.email)
-      expect(response.body.roles).toEqual(['user'])
+      expect(response.body.roles).toEqual(['admin'])
+
+      // Verify account information
+      expect(response.body.accounts).toBeInstanceOf(Array)
+      expect(response.body.accounts.length).toBeGreaterThan(0)
+
+      // check that the account is active
+      const account = response.body.accounts.find((acc) => acc.id === accountId)
+      if (account) {
+        expect(account.name).toBeDefined()
+        expect(account.isActive).toBe(true)
+      }
+
+      // Verify admin permissions based on default_user_modules_roles.sql
+      const expectedPermissions = [
+        'PASSWORD_RECOVERY_LINK_REQUEST_OWN',
+        'PASSWORD_RECOVERY_RESET_OWN',
+        'ACCOUNT_UPDATE',
+        'ACCOUNT_USER_MANAGEMENT',
+        'ENTITY_CREATION',
+        'USER_ACCOUNTS_INVITATION',
+        'USER_ENTITIES_INVITATION',
+        'USER_ROLE_ALLOCATION',
+        'ENTITY_USER_MANAGEMENT',
+        'ORGANIZATION_CREATION',
+        'ORGANIZATION_UPDATE'
+      ]
+
+      expect(response.body.permissions).toBeInstanceOf(Array)
+      expectedPermissions.forEach((permission) => {
+        expect(response.body.permissions).toContain(permission)
+      })
+
+      // Verify modules
+      const expectedModules = ['ACCOUNT_ADMINISTRATION', 'ORGANIZATION_ADMINISTRATION', 'USER_ACCOUNT_PASSWORD_RECOVERY']
+
+      expect(response.body.modules).toBeInstanceOf(Array)
+      expectedModules.forEach((module) => {
+        expect(response.body.modules).toContain(module)
+      })
     })
 
     it('Should retrieve guest information', async () => {

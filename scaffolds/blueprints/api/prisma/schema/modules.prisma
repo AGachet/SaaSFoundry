@@ -25,6 +25,7 @@ model Module {
   createdAt   DateTime   @default(now()) @map("created_at")
 
   type         ModuleType         @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
   rolesLinked  RoleModuleLink[]
   permissions  ModulePermission[]
 
@@ -46,6 +47,7 @@ model ModulePermission {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   module      Module                @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
   rolesLinked RolePermissionLink[]
 
   @@unique([moduleId, name])
