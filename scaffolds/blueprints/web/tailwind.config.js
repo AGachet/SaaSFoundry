@@ -63,6 +63,21 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))'
         }
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { 'background-position': '-200% 0' },
+          '100%': { 'background-position': '200% 0' }
+        }
+      },
+      animation: {
+        shimmer: 'shimmer 1.2s linear infinite'
+      },
+      backgroundImage: {
+        'shimmer-orange': 'linear-gradient(90deg, hsl(24.6, 70%, 96%) 25%, hsl(24.6, 70%, 65%) 50%, hsl(24.6, 70%, 96%) 75%)'
+      },
+      backgroundSize: {
+        shimmer: '200% 100%'
       }
     }
   },

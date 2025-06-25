@@ -10,18 +10,42 @@ const apiClient = {
   /**
    * Generic method for making HTTP requests
    */
-  async request<T>(endpoint: string, method: string = 'GET', data?: unknown, customHeaders: Record<string, string> = {}): Promise<T> {
+  async request<T>(
+    endpoint: string,
+    method: string = 'GET',
+    data?: unknown,
+    options: {
+      headers?: Record<string, string>
+      params?: Record<string, string | number | boolean | string[] | number[]>
+    } = {}
+  ): Promise<T> {
     const baseApiUrl = '/api'
-    const url = `${baseApiUrl}${endpoint}`
+    let url = `${baseApiUrl}${endpoint}`
+
+    // Add query parameters if they exist
+    if (options.params) {
+      const searchParams = new URLSearchParams()
+      Object.entries(options.params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => searchParams.append(key, String(v)))
+        } else if (value !== undefined) {
+          searchParams.append(key, String(value))
+        }
+      })
+      const queryString = searchParams.toString()
+      if (queryString) {
+        url += `?${queryString}`
+      }
+    }
 
     // Default headers
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      ...customHeaders
+      ...options.headers
     }
 
     // Request options
-    const options: RequestInit = {
+    const requestOptions: RequestInit = {
       method,
       headers,
       // Important: include cookies in each request
@@ -29,10 +53,10 @@ const apiClient = {
     }
 
     // Add request body for non-GET methods
-    if (data && method !== 'GET') options.body = JSON.stringify(data)
+    if (data && method !== 'GET') requestOptions.body = JSON.stringify(data)
 
     try {
-      const response = await fetch(url, options)
+      const response = await fetch(url, requestOptions)
 
       // HTTP error handling
       if (!response.ok) {
@@ -62,24 +86,24 @@ const apiClient = {
   /**
    * Specific HTTP methods
    */
-  get<T>(endpoint: string, customHeaders = {}): Promise<T> {
-    return this.request<T>(endpoint, 'GET', undefined, customHeaders)
+  get<T>(endpoint: string, params?: Record<string, string | number | boolean | string[] | number[]>, customHeaders = {}): Promise<T> {
+    return this.request<T>(endpoint, 'GET', undefined, { headers: customHeaders, params })
   },
 
   post<T>(endpoint: string, data: unknown, customHeaders = {}): Promise<T> {
-    return this.request<T>(endpoint, 'POST', data, customHeaders)
+    return this.request<T>(endpoint, 'POST', data, { headers: customHeaders })
   },
 
   put<T>(endpoint: string, data: unknown, customHeaders = {}): Promise<T> {
-    return this.request<T>(endpoint, 'PUT', data, customHeaders)
+    return this.request<T>(endpoint, 'PUT', data, { headers: customHeaders })
   },
 
   patch<T>(endpoint: string, data: unknown, customHeaders = {}): Promise<T> {
-    return this.request<T>(endpoint, 'PATCH', data, customHeaders)
+    return this.request<T>(endpoint, 'PATCH', data, { headers: customHeaders })
   },
 
   delete<T>(endpoint: string, customHeaders = {}): Promise<T> {
-    return this.request<T>(endpoint, 'DELETE', undefined, customHeaders)
+    return this.request<T>(endpoint, 'DELETE', undefined, { headers: customHeaders })
   }
 }
 

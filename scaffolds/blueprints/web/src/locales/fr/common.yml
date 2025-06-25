@@ -4,11 +4,11 @@ version:
 
 user:
   tk_firstName_: Prénom
-  tk_firstNamePlaceholder_: John
+  tk_firstNamePlaceholder_: Bill
   tk_lastName_: Nom
-  tk_lastNamePlaceholder_: Doe
+  tk_lastNamePlaceholder_: Matt
   tk_email_: Email
-  tk_emailPlaceholder_: john.doe@saasfoundry.com
+  tk_emailPlaceholder_: bill.matt@billmate.com
 
 loading:
   tk_loadingSignin_: 'Connexion en cours...'
@@ -17,5 +17,68 @@ loading:
   tk_loadingUpdate_: 'Mise à jour en cours...'
   tk_loading_: 'Chargement en cours...'
 
+items:
+  tk_users_: Utilisateurs
+  tk_organization_: Organisations
+  tk_entities_: Entités
+  tk_roles_: Rôles
+
+status:
+  tk_title_: Statut
+  tk_all_: Tous les statuts
+  tk_pending_: En attente
+  tk_expired_: Expiré
+  tk_active_: Actif
+  tk_inactive_: Inactif
+  tk_unknown_: Inconnu
+  tk_global_: Global
+  tk_showing_: Affichage
+
+date:
+  tk_created-at_: Créé le
+  tk_updated-at_: Mis à jour le
+
+actions:
+  tk_title_: Actions
+  tk_edit_: Modifier
+  tk_create_: Créer
+  tk_activate_: Activer
+  tk_deactivate_: Désactiver
+  tk_cancel_: Annuler
+  tk_send_: Envoyer
+  tk_resend_: Renvoyer
+
+fields:
+  errors:
+    tk_locale_: Locale invalide
+    tk_required_: Ce champ est requis
+    tk_minLength_: Ce champ ne respecte pas la longueur minimale
+    tk_maxLength_: Ce champ dépasse la longueur maximale
+    tk_minOneEntityOrDirectLink_: Vous devez sélectionner au moins une entité ou rattacher directement au compte
+
+filters:
+  tk_title_: Filtres
+  tk_status_: Statut
+  tk_sort-by_: Trier par
+  tk_select-entities_: Sélectionner des entités
+  tk_selected-entities_: Entités sélectionnées
+  tk_select-roles_: Sélectionner des rôles
+  tk_selected-roles_: Rôles sélectionnés
+  tk_show-account-users_: Utilisateurs du compte
+  tk_search-placeholder_: Rechercher...
+
+work-in-progress:
+  tk_page-under-construction_: Cette page est en cours de construction.
+  tk_coming-soon_: Bientôt disponible !
+
 other:
+  tk_name_: Nom
+  tk_description_: Description
+  tk_type_: Type
+  tk_website_: Site web
+  tk_all_: 'Tout'
+  tk_linked-to_: Lié à
+  tk_sent-at_: Envoyé le
   tk_or_: 'ou'
+  tk_to_: 'à'
+  tk_of_: 'de'

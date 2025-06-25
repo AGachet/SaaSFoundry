@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 /**
  * Dependencies
  */
-import { useIsSessionActive } from '@/hooks/auth/session'
+import { useIsSessionActive } from '@/hooks/auth/useIsSession'
 
 /**
  * Components

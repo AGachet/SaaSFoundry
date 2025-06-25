@@ -15,6 +15,13 @@ signin:
   tk_noAccount_: Don't have an account?
   tk_authError_: The provided credentials do not match any account.
 
+userInvitation:
+  tk_title_: Accept invitation
+  tk_descriptionInvitation_: An administrator has invited you to join, complete your profile to access your account.
+  tk_invalidInvitation_: Invalid invitation
+  tk_redirecting_: Redirecting in {{ countdown }} seconds
+  tk_acceptInvitationError_: You invitation link is invalid, please contact your administrator.
+
 resetPasswordRequest:
   tk_title_: Reset password request
   tk_description_: Reset your password
@@ -61,3 +68,4 @@ callToAction:
   tk_sendResetPasswordLink_: Send reset password link
   tk_updatePassword_: Update password
   tk_signup_: Sign up
+  tk_accept_: Accept & sign in

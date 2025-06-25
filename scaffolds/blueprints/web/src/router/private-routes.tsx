@@ -6,9 +6,9 @@ import { RouteObject } from 'react-router-dom'
 /**
  * Dependencies
  */
-import { Dashboard, LayoutLogged } from '@/router/lazy-pages'
+import { AccountManagement, Dashboard, LayoutLogged } from '@/router/lazy-pages'
 import { LazyRouteElement } from '@/router/lazy-route-element'
-import { PrivateOnlyRoute } from '@/router/routes-guard'
+import { ModuleAccessRoute, PrivateOnlyRoute } from '@/router/routes-guard'
 
 /**
  * Routes
@@ -24,6 +24,16 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'dashboard',
             element: LazyRouteElement(Dashboard)
+          },
+          {
+            path: 'account',
+            element: <ModuleAccessRoute module="ACCOUNT_ADMINISTRATION" />,
+            children: [
+              {
+                index: true,
+                element: LazyRouteElement(AccountManagement)
+              }
+            ]
           }
           // Add other protected routes here
         ]

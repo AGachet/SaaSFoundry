@@ -1,0 +1,75 @@
+tk_title_: Compte
+tk_description_: Gérez les détails de votre compte, les utilisateurs, les entités et les rôles
+
+tabs:
+  tk_overview_: Vue d'ensemble
+  tk_overview-description_: Consultez et gérez la vue d'ensemble de votre compte
+  tk_users_: Utilisateurs
+  tk_users-description_: Gérez les membres de votre équipe et leurs permissions
+  tk_entities_: Entités
+  tk_entities-description_: Gérez vos entités et leurs paramètres
+
+overview:
+  accountInfo:
+    tk_title_: Informations du compte
+    tk_description_: Consultez et gérez les détails de votre compte
+    tk_account-name_: Nom du compte
+    tk_account-id_: ID du compte
+    tk_account-created-at_: Créé le
+    tk_account-updated-at_: Dernière mise à jour
+  statistics:
+    tk_title_: Statistiques
+    tk_description_: Vue d'ensemble des ressources de votre compte
+    # tk_users_: (common.yml > items)
+    # tk_entities_: (common.yml > items)
+    # tk_roles_: (common.yml > items)
+  recentUsers:
+    tk_title_: Utilisateurs récents
+    tk_description_: Les 5 utilisateurs créés ou ajoutés récemment
+    tk_invite-user_: Inviter un utilisateur
+    tk_view-all-users_: Voir tous les utilisateurs
+  recentEntities:
+    tk_title_: Entités récentes
+    tk_description_: Les 5 entités créées récemment
+    tk_create-entity_: Créer une nouvelle entité
+    tk_no-entity_: Ce compte n'a pas d'entité
+    tk_view-all-entities_: Voir toutes les entités
+  recentRoles:
+    tk_title_: Rôles récents
+    tk_description_: Les 5 rôles créés récemment
+    tk_view-all-roles_: Voir tous les rôles
+
+users:
+  tk_title_: Utilisateurs du compte
+  tk_description_: Gérez les membres de votre équipe et leurs permissions
+  tk_invite-new-user_: Nouveau utilisateur
+  tk_invite-description_: Invitez un nouvel utilisateur à rejoindre votre compte ou entités
+  tk_filters-description_: Filtrez vos utilisateurs par statut, rôle, entité, etc.
+  tk_filters-search-placeholder_: Rechercher un utilisateur...
+  tk_direct-account-link_: Lien direct avec le compte
+  tk_direct-account-link-description_: Ce type d'utilisateur a accès à toutes les entités de ce compte
+  tk_table-no-users_: Aucun utilisateur trouvé
+  tk_pending-invitations_: Invitations en attente
+
+entities:
+  tk_title_: Entités du compte
+  tk_description_: Gérez vos entités et leurs paramètres
+  tk_filters-description_: Filtrez vos entités par statut, nom, etc.
+  tk_filters-search-placeholder_: Rechercher des entités...
+  tk_table-no-entities_: Aucune entité trouvée
+  tk_create-entity_: Nouvelle entité
+  tk_create-entity-description_: Créez une nouvelle entité à associer à votre compte
+  tk_entity-details_: Détails de l'entité
+
+organizations:
+  tk_organization-details_: Détails de l'organisation
+  tk_type-company_: Entreprise
+  tk_type-association_: Association
+  tk_type-community_: Communauté
+
+roles:
+  tk_title_: Rôles du compte
+  tk_description_: Gérez les rôles et permissions des utilisateurs
+  tk_filters-description_: Filtrez vos rôles par statut, nom, etc.
+  tk_filters-search-placeholder_: Rechercher des rôles...
+  tk_table-no-roles_: Aucun rôle trouvé

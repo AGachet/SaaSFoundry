@@ -19,13 +19,16 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      proxy: {
-        '/api': {
-          target: env.VITE_BASE_API_URL,
-          changeOrigin: true,
-          secure: false
-        }
-      },
+      proxy:
+        process.env.CI || mode === 'test'
+          ? undefined
+          : {
+              '/api': {
+                target: env.VITE_BASE_API_URL,
+                changeOrigin: true,
+                secure: false
+              }
+            },
       watch: {
         usePolling: true,
         interval: 1000

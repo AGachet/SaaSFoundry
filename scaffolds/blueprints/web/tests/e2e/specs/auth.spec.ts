@@ -136,16 +136,12 @@ test.describe('Authentication Flow', () => {
 
     // Check for the presence of elements
     await expect(page.getByRole('heading', selectors.signUp.title)).toBeVisible()
-    await expect(page.getByLabel(selectors.fields.firstName)).toBeVisible()
-    await expect(page.getByLabel(selectors.fields.lastName)).toBeVisible()
     await expect(page.getByLabel(selectors.fields.email)).toBeVisible()
     await expect(page.getByLabel(selectors.fields.password)).toBeVisible()
     await expect(signUpButton).toBeVisible()
 
     // Test with empty fields
     await signUpButton.click()
-    await expect(page.getByText(selectors.errors.requiredFirstName)).toBeVisible()
-    await expect(page.getByText(selectors.errors.requiredLastName)).toBeVisible()
     await expect(page.getByText(selectors.errors.requiredEmail)).toBeVisible()
     await expect(page.getByText(selectors.errors.shortPassword)).toBeVisible()
 
@@ -162,8 +158,6 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByText(selectors.errors.shortPassword)).toBeVisible()
 
     // Test successful creation
-    await page.getByLabel(selectors.fields.firstName).fill(testData.firstName)
-    await page.getByLabel(selectors.fields.lastName).fill(testData.lastName)
     await page.getByLabel(selectors.fields.email).fill(testData.email)
     await page.getByLabel(selectors.fields.password).fill(testData.passwordValid)
 
@@ -194,9 +188,6 @@ test.describe('Authentication Flow', () => {
      * Mock the signin endpoint
      */
     await (page as CustomPage).mockRoute(testApi.signIn.URL, async (route) => {
-      const json = await route.request().postDataJSON()
-      expect(json.confirmAccountToken).toBe(testData.confirmAccountToken)
-
       await route.fulfill({
         status: testApi.signIn.success.status,
         contentType: 'application/json',
@@ -207,20 +198,24 @@ test.describe('Authentication Flow', () => {
     /**
      * Mock the user endpoint
      */
-    await (page as CustomPage).mockRoute(testApi.me.URL, async (route) => {
+    await (page as CustomPage).mockRoute(testApi.meAdmin.URL, async (route) => {
       await route.fulfill({
-        status: testApi.me.success.status,
+        status: testApi.meAdmin.success.status,
         contentType: 'application/json',
-        body: JSON.stringify(testApi.me.success.body)
+        body: JSON.stringify(testApi.meAdmin.success.body)
       })
     })
 
     // Navigate to the signin page and fill the form
     await page.goto(`${selectors.signIn.URL}?confirmAccountToken=${testData.confirmAccountToken}`)
-    await page.getByLabel(selectors.fields.email).fill(testData.email)
-    await page.getByLabel(selectors.fields.password).fill(testData.passwordValid)
 
-    // Submit and validate
+    // Check that the fields are pre-filled
+    await expect(page.getByLabel(selectors.fields.firstName)).toHaveValue(testData.firstName)
+    await expect(page.getByLabel(selectors.fields.lastName)).toHaveValue(testData.lastName)
+    await expect(page.getByLabel(selectors.fields.email)).toHaveValue(testData.email)
+
+    // Enter password, submit and validate
+    await page.getByLabel(selectors.fields.password).fill(testData.passwordValid)
     await signInButton.click()
     await expect(page).toHaveURL(selectors.signIn.successURL)
   })
@@ -229,11 +224,11 @@ test.describe('Authentication Flow', () => {
     /**
      * Mock the user endpoint
      */
-    await (page as CustomPage).mockRoute(testApi.me.URL, async (route) => {
+    await (page as CustomPage).mockRoute(testApi.meAdmin.URL, async (route) => {
       await route.fulfill({
-        status: testApi.me.success.status,
+        status: testApi.meAdmin.success.status,
         contentType: 'application/json',
-        body: JSON.stringify(testApi.me.success.body)
+        body: JSON.stringify(testApi.meAdmin.success.body)
       })
     })
 
@@ -250,13 +245,13 @@ test.describe('Authentication Flow', () => {
      */
     await page.evaluate((userData) => {
       localStorage.setItem('authMe', JSON.stringify(userData))
-    }, testApi.me.success.body)
+    }, testApi.meAdmin.success.body)
 
     // Navigate to the dashboard
     await page.goto(selectors.dashboard.URL)
 
     // Verify that the user is logged in
-    await expect(page.getByText(testApi.me.success.body.email)).toBeVisible()
+    await expect(page.getByText(testApi.meAdmin.success.body.email)).toBeVisible()
 
     // Click on the user menu and sign out
     await page.getByRole('button', selectors.dashboard.cta.userMenu).click()

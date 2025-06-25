@@ -55,7 +55,19 @@ export const setupApiInterceptor = async (page: Page, interceptorURL: string) =>
     const pattern = new RegExp(patternStr)
 
     mockedRoutes.add(pattern)
-    await page.route(pattern, handler)
+    await page.route(pattern, async (route) => {
+      const request = route.request()
+      const requestType = request.resourceType()
+
+      // Only mock XHR/fetch requests, not module loading or other resources
+      if (requestType !== 'xhr' && requestType !== 'fetch') {
+        await route.continue()
+        return
+      }
+
+      // Call the original handler for API requests
+      await handler(route)
+    })
   }
 
   // Store the helper function on the page object for use in tests

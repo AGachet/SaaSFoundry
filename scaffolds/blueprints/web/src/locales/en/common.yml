@@ -1,14 +1,10 @@
-version:
-  free: 'Free version'
-  premium: 'Premium version'
-
 user:
   tk_firstName_: First name
-  tk_firstNamePlaceholder_: John
+  tk_firstNamePlaceholder_: Bill
   tk_lastName_: Last name
-  tk_lastNamePlaceholder_: Doe
+  tk_lastNamePlaceholder_: Matt
   tk_email_: Email
-  tk_emailPlaceholder_: john.doe@saasfoundry.com
+  tk_emailPlaceholder_: bill.matt@billmate.com
 
 loading:
   tk_loadingCreate_: 'Creating...'
@@ -17,5 +13,70 @@ loading:
   tk_loadingUpdate_: 'Updating...'
   tk_loading_: 'Loading...'
 
+items:
+  tk_users_: Users
+  tk_organization_: Organizations
+  tk_entities_: Entities
+  tk_roles_: Roles
+
+status:
+  tk_title_: Status
+  tk_all_: All statuses
+  tk_pending_: Pending
+  tk_expired_: Expired
+  tk_active_: Active
+  tk_inactive_: Inactive
+  tk_unknown_: Unknown
+  tk_global_: Global
+  tk_showing_: Showing
+
+date:
+  tk_created-at_: Created at
+  tk_updated-at_: Updated at
+
+actions:
+  tk_title_: Actions
+  tk_edit_: Edit
+  tk_create_: Create
+  tk_activate_: Activate
+  tk_deactivate_: Deactivate
+  tk_cancel_: Cancel
+  tk_send_: Send
+  tk_resend_: Resend
+  tk_loading_: 'In progress...'
+
+fields:
+  errors:
+    tk_locale_: Invalid locale
+    tk_required_: This field is required
+    tk_emailError_: This email is not valid
+    tk_minLength_: This field does not meet the minimum length requirements
+    tk_maxLength_: This field exceeds the maximum length requirements
+    tk_minOneEntityOrDirectLink_: You must select at least one entity or directly link the user to the current account
+
+filters:
+  tk_title_: Filters
+  tk_status_: Status
+  tk_sort-by_: Sort by
+  tk_select-entities_: Select entities
+  tk_selected-entities_: Selected entities
+  tk_select-roles_: Select roles
+  tk_selected-roles_: Selected roles
+  tk_show-account-users_: Account users
+  tk_search-placeholder_: Search...
+
+work-in-progress:
+  tk_page-under-construction_: This page is under construction.
+  tk_coming-soon_: Coming soon!
+
 other:
+  tk_name_: Name
+  tk_description_: Description
+  tk_type_: Type
+  tk_website_: Website
+  tk_all_: 'All'
+  tk_linked-to_: Linked to
+  tk_sent-at_: Sent at
   tk_or_: 'or'
+  tk_to_: 'to'
+  tk_of_: 'of'

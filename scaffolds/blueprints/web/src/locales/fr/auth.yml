@@ -16,6 +16,13 @@ signin:
   tk_noAccount_: Vous n'avez pas de compte ?
   tk_authError_: Les informations fournies ne permettent pas de retrouver votre compte.
 
+userInvitation:
+  tk_title_: Accepter l'invitation
+  tk_descriptionInvitation_: Un administrateur vous a invité à rejoindre, complétez votre profil pour accéder à votre compte.
+  tk_invalidInvitation_: Invitation invalide
+  tk_redirecting_: Redirection dans {{ countdown }} secondes
+  tk_acceptInvitationError_: Votre lien d'invitation est invalide, veuillez contacter votre administrateur.
+
 resetPasswordRequest:
   tk_title_: Demande de réinitialisation
   tk_description_: Réinitialisez votre mot de passe
@@ -63,3 +70,4 @@ callToAction:
   tk_sendResetPasswordLink_: Envoyer le lien de réinitialisation
   tk_updatePassword_: Mettre à jour le mot de passe
   tk_signup_: Créer un compte
+  tk_accept_: Accepter et se connecter

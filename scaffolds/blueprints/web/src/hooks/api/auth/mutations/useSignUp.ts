@@ -12,14 +12,13 @@ import apiClient from '@/lib/api/client'
 
 // Translation
 const tAuth = (key: string) => i18next.t(key, { ns: 'auth' })
+const tCommon = (key: string) => i18next.t(key, { ns: 'common' })
 
 /**
  * Schemas & DTOs
  */
 export const useSignUpSchema = () => {
   const payload = z.object({
-    firstname: z.string().min(1, { message: tAuth('fields.tk_firstNameError_') }),
-    lastname: z.string().min(1, { message: tAuth('fields.tk_lastNameError_') }),
     email: z
       .string()
       .min(1, { message: tAuth('fields.tk_emailRequired_') })
@@ -34,7 +33,7 @@ export const useSignUpSchema = () => {
     locale: z
       .string()
       .optional()
-      .transform((val) => val?.toUpperCase())
+      .refine((val) => !val || /^[A-Z]{2}$/.test(val), { message: tCommon('fields.tk_localeError_') })
   })
 
   const response = z.object({
@@ -61,8 +60,14 @@ export const useSignUp = () => {
       // Schema validation
       schemas.payload.parse(data)
 
+      // Add locale only if not provided
+      const payload = {
+        ...data,
+        locale: data.locale || navigator.language.split('-')[0].toUpperCase()
+      }
+
       // Send data to the API
-      const response = await apiClient.post<SignUpResponseDto>('/auth/signup', data)
+      const response = await apiClient.post<SignUpResponseDto>('/auth/signup', payload)
       return schemas.response.parse(response)
     },
     onError: (error) => {

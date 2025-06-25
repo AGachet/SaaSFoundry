@@ -1,6 +1,7 @@
 /**
  * Dependencies
  */
+import { ChevronRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -8,11 +9,6 @@ import { useTranslation } from 'react-i18next'
  */
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/shadcn/collapsible'
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '@/components/ui/shadcn/sidebar'
-
-/**
- * Icons
- */
-import { ChevronRight } from 'lucide-react'
 
 /**
  * TS Types
@@ -41,7 +37,7 @@ interface NavSectionProps {
  * React declaration
  */
 export const NavSection = ({ section }: NavSectionProps) => {
-  const { t } = useTranslation('nav')
+  const { t: tNav } = useTranslation('nav')
 
   const renderSubItems = (item: NavSectionItem) => (
     <SidebarMenuSub>
@@ -49,7 +45,7 @@ export const NavSection = ({ section }: NavSectionProps) => {
         <SidebarMenuSubItem key={`${item.title}-${subItem.title}`}>
           <SidebarMenuSubButton asChild>
             <a href={subItem.url}>
-              <span>{t(subItem.title)}</span>
+              <span>{tNav(subItem.title)}</span>
             </a>
           </SidebarMenuSubButton>
         </SidebarMenuSubItem>
@@ -61,9 +57,9 @@ export const NavSection = ({ section }: NavSectionProps) => {
     <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={t(item.title)}>
+          <SidebarMenuButton tooltip={tNav(item.title)}>
             {item.icon && <item.icon />}
-            <span>{t(item.title)}</span>
+            <span>{tNav(item.title)}</span>
             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
@@ -76,14 +72,14 @@ export const NavSection = ({ section }: NavSectionProps) => {
     <SidebarMenuButton key={item.title} asChild>
       <a href={item.url}>
         {item.icon && <item.icon />}
-        <span>{t(item.title)}</span>
+        <span>{tNav(item.title)}</span>
       </a>
     </SidebarMenuButton>
   )
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{t(section.title)}</SidebarGroupLabel>
+      <SidebarGroupLabel>{tNav(section.title)}</SidebarGroupLabel>
       <SidebarMenu>{section.items.map((item) => (item.subItems ? renderCollapsibleItem(item) : renderSimpleItem(item)))}</SidebarMenu>
     </SidebarGroup>
   )

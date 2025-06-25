@@ -31,7 +31,7 @@ i18n
     fallbackLng: 'en',
     debug: false,
     interpolation: { escapeValue: false },
-    ns: ['common', 'nav', 'auth', 'page-errors', 'page-dashboard'],
+    ns: ['common', 'nav', 'auth', 'page-errors', 'account'],
     defaultNS: 'common'
   })
 

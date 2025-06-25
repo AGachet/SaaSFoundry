@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.skeleton-shimmer-orange {
+  @apply animate-shimmer bg-shimmer-orange bg-[length:200%_100%];
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

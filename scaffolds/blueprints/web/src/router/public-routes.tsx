@@ -6,7 +6,7 @@ import { Navigate, RouteObject } from 'react-router-dom'
 /**
  * Dependencies
  */
-import { NotFound, ResetPassword, ResetPasswordRequest, SignIn, SignUp } from '@/router/lazy-pages'
+import { NotFound, ResetPassword, ResetPasswordRequest, SignIn, SignUp, UserInvitation } from '@/router/lazy-pages'
 import { LazyRouteElement } from '@/router/lazy-route-element'
 import { ModuleAccessRoute, PublicOnlyRoute } from '@/router/routes-guard'
 
@@ -50,6 +50,10 @@ export const publicRoutes: RouteObject[] = [
             element: LazyRouteElement(ResetPassword)
           }
         ]
+      },
+      {
+        path: 'user-invitation',
+        element: LazyRouteElement(UserInvitation)
       }
       // Add other public routes here
     ]

@@ -14,16 +14,47 @@ const tAuth = (key: string) => i18next.t(key, { ns: 'auth' })
  * Schemas & DTOs
  */
 export const useMeSchema = () => {
-  const response = z.object({
-    userId: z.string(),
-    firstname: z.string().nullable(),
-    lastname: z.string().nullable(),
-    email: z.string(),
-    roles: z.array(z.string()),
-    modules: z.array(z.string()),
-    permissions: z.array(z.string()),
-    createdAt: z.string()
+  const accountSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    isActive: z.boolean()
   })
+
+  const organizationSchema = z.object({
+    id: z.string(),
+    name: z.string()
+  })
+
+  const peopleSchema = z.object({
+    firstname: z.string().nullable(),
+    lastname: z.string().nullable()
+  })
+
+  const entitySchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    isActive: z.boolean(),
+    accountId: z.string(),
+    organization: organizationSchema.nullable()
+  })
+
+  const response = z
+    .object({
+      userId: z.string(),
+      email: z.string(),
+      people: peopleSchema,
+      roles: z.array(z.string()).nonempty(),
+      modules: z.array(z.string()).nonempty(),
+      permissions: z.array(z.string()).nonempty(),
+      accounts: z.array(accountSchema),
+      entities: z.array(entitySchema),
+      createdAt: z.string()
+    })
+    .refine((data) => data.accounts.length > 0 || data.entities.length > 0, {
+      message: 'Either accounts or entities must be non-empty',
+      path: ['accounts', 'entities']
+    })
 
   return { response }
 }

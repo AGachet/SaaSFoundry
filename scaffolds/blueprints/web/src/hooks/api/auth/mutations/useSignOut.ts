@@ -9,20 +9,17 @@ import { z } from 'zod'
 /**
  * Dependencies
  */
-import { useGuest } from '@/hooks/api/auth'
+import { useGuest } from '@/hooks/api/auth/queries/useGuest'
 import apiClient from '@/lib/api/client'
 
 // Translation
 const tAuth = (key: string) => i18next.t(key, { ns: 'auth' })
 
 /**
- * Types
+ * Types, Schemas & DTOs
  */
-import type { MeResponseDto } from '@/hooks/api/auth/queries/useMe'
+import type { MeResponseDto } from '@/hooks/api/auth'
 
-/**
- * Schemas & DTOs
- */
 export const useSignOutSchema = () => {
   const payload = z.object({
     userId: z.string()
@@ -46,16 +43,15 @@ export const useSignOut = () => {
   const guest = useGuest()
   const schemas = useSignOutSchema()
 
-  // Get user data from cache
+  // Get user data from cache (localStorage is only used to update the cache on refresh)
   const me = queryClient.getQueryData<MeResponseDto>(['authMe'])
-  if (!me?.userId) throw new Error('User not found in cache')
 
   const mutation = useMutation({
     mutationFn: async () => {
+      if (!me?.userId) return { message: 'User already signed out' }
+
       // Schema validation
-      const payload: SignOutPayloadDto = {
-        userId: me.userId
-      }
+      const payload: SignOutPayloadDto = { userId: me.userId }
       schemas.payload.parse(payload)
 
       // Send data to the API

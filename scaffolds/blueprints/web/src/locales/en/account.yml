@@ -1,0 +1,75 @@
+tk_title_: Account
+tk_description_: Manage your account details, users, entities and roles
+
+tabs:
+  tk_overview_: Overview
+  tk_overview-description_: View and manage your account details
+  tk_users_: Users
+  tk_users-description_: Manage your team members and their permissions
+  tk_entities_: Entities
+  tk_entities-description_: Manage your business entities and their settings
+
+overview:
+  accountInfo:
+    tk_title_: Account Information
+    tk_description_: View and manage your account details
+    tk_account-name_: Account Name
+    tk_account-id_: Account ID
+    tk_account-created-at_: Created at
+    tk_account-updated-at_: Updated at
+  statistics:
+    tk_title_: Statistics
+    tk_description_: Overview of your account resources
+    # tk_users_: (common.yml > items)
+    # tk_entities_: (common.yml > items)
+    # tk_roles_: (common.yml > items)
+  recentUsers:
+    tk_title_: Recent Users
+    tk_description_: The 5 most recent users created or added
+    tk_invite-user_: Invite a new user
+    tk_view-all-users_: View all users
+  recentEntities:
+    tk_title_: Recent Entities
+    tk_description_: The 5 most recent entities created
+    tk_create-entity_: Create a new entity
+    tk_no-entity_: This account has no entities
+    tk_view-all-entities_: View all entities
+  recentRoles:
+    tk_title_: Recent Roles
+    tk_description_: The 5 most recent roles created
+    tk_view-all-roles_: View all roles
+
+users:
+  tk_title_: Account users
+  tk_description_: Manage your team members and their permissions
+  tk_invite-new-user_: Invite user
+  tk_invite-description_: Invite a new user to join your account or entities
+  tk_filters-description_: Filter your users by status, role, entity, etc.
+  tk_filters-search-placeholder_: Search users...
+  tk_direct-account-link_: Directly link the user to the current account
+  tk_direct-account-link-description_: This kind of user has access to all entities of this account
+  tk_table-no-users_: No users found
+  tk_pending-invitations_: Pending invitations
+
+entities:
+  tk_title_: Account Entities
+  tk_description_: Manage your business entities and their settings
+  tk_filters-description_: Filter your entities by status, name, etc.
+  tk_filters-search-placeholder_: Search entities...
+  tk_table-no-entities_: No entities found
+  tk_create-entity_: New entity
+  tk_create-entity-description_: Create a new entity to attach to your account
+  tk_entity-details_: Entity details
+
+organizations:
+  tk_organization-details_: Organization details
+  tk_type-company_: Company
+  tk_type-association_: Association
+  tk_type-community_: Community
+
+roles:
+  tk_title_: Account Roles
+  tk_description_: Manage your user roles and permissions
+  tk_filters-description_: Filter your roles by status, name, etc.
+  tk_filters-search-placeholder_: Search roles...
+  tk_table-no-roles_: No roles found

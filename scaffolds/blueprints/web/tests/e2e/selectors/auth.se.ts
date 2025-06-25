@@ -2,6 +2,7 @@
  * Testing Data
  */
 const testData = {
+  userId: '123e4567-e89b-12d3-a456-426614174000',
   email: 'bill.mate@diamondforge.fr',
   passwordShort: 'pass',
   passwordInvalid: 'password123',
@@ -9,17 +10,18 @@ const testData = {
   emailInvalid: 'invalid-email',
   firstName: 'Bill',
   lastName: 'Mate',
-  confirmAccountToken: 'confirm-account-token',
+  confirmAccountToken:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImJpbGwubWF0ZUBkaWFtb25kZm9yZ2UuZnIiLCJzdWIiOiJjbWI4MWhrZjMwMDAwdDg0eGI5YmpscnNiIiwiZmlyc3RuYW1lIjoiQmlsbCIsImxhc3RuYW1lIjoiTWF0ZSIsImxvY2FsZSI6IkZSIiwiaWF0IjoxNzQ4NDQyNDQ0LCJleHAiOjE3NDkwNDcyNDR9.EbCtfmHe45W18fVf9nuf87ZgTqxJf6JaDGMbcCSqo3g',
   resetPasswordToken: 'reset-password-token'
 }
 
 const testApi = {
-  interceptorURL: '**/auth/**',
+  interceptorURL: '**/api/auth/**',
   signIn: {
-    URL: '**/auth/signin',
+    URL: '**/api/auth/signin',
     success: {
       status: 200,
-      body: { userId: '123e4567-e89b-12d3-a456-426614174000' }
+      body: { userId: testData.userId }
     },
     error: {
       status: 401,
@@ -27,37 +29,89 @@ const testApi = {
     }
   },
   signUp: {
-    URL: '**/auth/signup',
+    URL: '**/api/auth/signup',
     success: {
       status: 200,
       body: { message: 'User registration successful. Please check your email for confirmation.' }
     }
   },
   signOut: {
-    URL: '**/auth/signout',
+    URL: '**/api/auth/signout',
     success: {
       status: 200,
       body: { message: 'User signed out successfully' }
     }
   },
-  me: {
-    URL: '**/auth/me',
+  meAdmin: {
+    URL: '**/api/auth/me',
     success: {
       status: 200,
       body: {
-        userId: '123e4567-e89b-12d3-a456-426614174000',
-        firstname: 'Bill',
-        lastname: 'Mate',
+        userId: testData.userId,
         email: 'bill.mate@diamondforge.fr',
-        roles: ['user'],
-        modules: ['USER_ACCOUNT_PASSWORD_RECOVERY', 'USER_ACCOUNT_CREATION'],
-        permissions: ['USER_ACCOUNT_CREATE_OWN', 'PASSWORD_RECOVERY_LINK_REQUEST_OWN', 'PASSWORD_RECOVERY_RESET_OWN', 'USER_ACCOUNT_READ_OWN', 'USER_ACCOUNT_UPDATE_OWN'],
+        people: {
+          firstname: 'Bill',
+          lastname: 'Mate'
+        },
+        roles: ['admin'],
+        modules: ['ACCOUNT_ADMINISTRATION', 'ORGANIZATION_ADMINISTRATION', 'USER_ACCOUNT_PASSWORD_RECOVERY'],
+        permissions: [
+          'PASSWORD_RECOVERY_LINK_REQUEST_OWN',
+          'PASSWORD_RECOVERY_RESET_OWN',
+          'ACCOUNT_UPDATE',
+          'ACCOUNT_USER_MANAGEMENT',
+          'ACCOUNT_ENTITY_MANAGEMENT',
+          'ENTITY_CREATION',
+          'USER_ACCOUNTS_INVITATION',
+          'USER_ENTITIES_INVITATION',
+          'USER_ROLE_ALLOCATION',
+          'ENTITY_USER_MANAGEMENT',
+          'ORGANIZATION_CREATION',
+          'ORGANIZATION_UPDATE'
+        ],
+        accounts: [
+          {
+            id: 'acc-123e4567-e89b-12d3-a456-426614174000',
+            name: 'Main account',
+            description: 'Default account for testing',
+            isActive: true
+          }
+        ],
+        entities: [
+          {
+            id: 'ent-123e4567-e89b-12d3-a456-426614174000',
+            name: 'Test Entity',
+            isActive: true,
+            accountId: 'acc-123e4567-e89b-12d3-a456-426614174000',
+            organization: {
+              id: 'org-123e4567-e89b-12d3-a456-426614174000',
+              name: 'Test Organization'
+            }
+          }
+        ],
         createdAt: new Date().toISOString()
       }
     }
   },
+  meUser: {
+    URL: '**/api/auth/me',
+    success: {
+      status: 200,
+      body: {
+        userId: testData.userId,
+        email: 'bill.mate@diamondforge.fr',
+        people: {
+          firstname: 'Bill',
+          lastname: 'Mate'
+        },
+        roles: ['user'],
+        modules: ['USER_ACCOUNT_PASSWORD_RECOVERY'],
+        permissions: ['PASSWORD_RECOVERY_LINK_REQUEST_OWN', 'PASSWORD_RECOVERY_RESET_OWN']
+      }
+    }
+  },
   guest: {
-    URL: '**/auth/guest',
+    URL: '**/api/auth/guest',
     success: {
       status: 200,
       body: {
@@ -68,7 +122,7 @@ const testApi = {
     }
   },
   resetPasswordRequest: {
-    URL: '**/auth/request-password-reset',
+    URL: '**/api/auth/request-password-reset',
     success: {
       status: 200,
       body: { message: 'Reset password link sent successfully', resetToken: 'test-reset-token' }
@@ -79,7 +133,7 @@ const testApi = {
     }
   },
   resetPassword: {
-    URL: '**/auth/reset-password',
+    URL: '**/api/auth/reset-password',
     success: {
       status: 200,
       body: { message: 'Password reset successful' }
@@ -99,6 +153,7 @@ const selectors = {
     URL: '/dashboard',
     cta: {
       userMenu: { name: /Bill Mate/i },
+      account: { name: /Account management/i },
       signOut: { name: /Sign out/i }
     }
   },

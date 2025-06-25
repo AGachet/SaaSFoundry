@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom'
 /**
  * Components
  */
+import { Logo } from '@/components/ui/custom/logo'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
@@ -123,7 +124,8 @@ export function ResetPassword() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50">
+    <div className="flex h-screen flex-col items-center bg-gray-50">
+      <Logo isLong className="max-w-xs px-4 py-20" />
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">{tAuth('resetPassword.tk_title_')}</h2>

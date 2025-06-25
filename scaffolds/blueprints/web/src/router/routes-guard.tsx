@@ -7,7 +7,7 @@ import { Navigate, Outlet } from 'react-router-dom'
  * Dependencies
  */
 import { useGuest } from '@/hooks/api/auth'
-import { useIsSessionActive } from '@/hooks/auth/session'
+import { useIsSessionActive } from '@/hooks/auth/useIsSession'
 import { useModuleAccess } from '@/hooks/auth/useModuleAccess'
 
 /**
