@@ -101,26 +101,6 @@ export function SignIn() {
   }
 
   const hasPasswordModuleAccess = hasModuleAccess('USER_ACCOUNT_PASSWORD_RECOVERY');
-
-  // Redirect on successful login
-  useEffect(() => {
-    if (signInMutation.isSuccess || isSessionActive) navigate('/dashboard')
-  }, [isSessionActive, signInMutation.isSuccess, navigate])
-
-  const onSubmit = (values: SignInPayloadDto) => {
-    setAuthError(null)
-
-    // Prepare payload
-    const payload: SignInPayloadDto = {
-      email: values.email,
-      password: values.password
-    }
-
-    // Only add confirmAccountToken and user info if token exists
-    if (confirmAccountToken) {
-      payload.confirmAccountToken = confirmAccountToken
-
-      // If it's the first login with the token, add the profile information
       if (values.firstname && values.lastname) {
         payload.firstname = values.firstname
         payload.lastname = values.lastname
