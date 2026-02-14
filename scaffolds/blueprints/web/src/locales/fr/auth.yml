@@ -9,6 +9,7 @@ signup:
   tk_successTitle_: Compte créé avec succès
   tk_successDescription_: Vérifiez votre boite email!
   tk_errorMessage_: Une erreur est survenue lors de la création du compte.
+  tk_authError_: Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.
 
 signin:
   tk_title_: Connexion

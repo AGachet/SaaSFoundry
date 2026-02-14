@@ -8,6 +8,7 @@ signup:
   tk_successTitle_: Account created successfully
   tk_successDescription_: Check your email for verification instructions.
   tk_errorMessage_: An error occurred while creating the account.
+  tk_authError_: An error occurred while creating your account. Please try again.
 
 signin:
   tk_title_: Sign in
