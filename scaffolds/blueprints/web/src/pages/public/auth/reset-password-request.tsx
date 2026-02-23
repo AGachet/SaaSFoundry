@@ -87,23 +87,23 @@ export function ResetPasswordRequest() {
   // Success view
   if (isSubmitted) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-muted">
         <Card className="w-full max-w-md">
           <CardHeader>
             <div className="mb-4 flex justify-center">
-              <CheckCircle className="h-16 w-16 text-green-500" />
+              <CheckCircle className="h-16 w-16 text-emerald-500" />
             </div>
             <CardTitle className="text-center text-2xl">{tAuth('resetPasswordRequest.tk_successTitle_')}</CardTitle>
             <CardDescription className="text-center">{tAuth('resetPasswordRequest.tk_successDescription_')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="bg-blue-50 text-blue-800">
+            <Alert className="bg-primary/10 text-primary">
               <AlertDescription>{tAuth('resetPasswordRequest.tk_verifyResetPasswordDescription_', { userEmail })}</AlertDescription>
             </Alert>
             <p className="text-center text-sm text-muted-foreground">{tAuth('resetPasswordRequest.tk_checkSpam_')}</p>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Link to="/signin" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/signin" className="font-medium text-primary hover:text-primary/80">
               {tAuth('callToAction.tk_backToSignin_')}
             </Link>
           </CardFooter>
@@ -113,18 +113,18 @@ export function ResetPasswordRequest() {
   }
 
   return (
-    <div className="flex h-screen flex-col items-center bg-gray-50">
+    <div className="flex h-screen flex-col items-center bg-muted">
       <Logo isLong className="max-w-xs px-4 py-20" />
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">{tAuth('resetPasswordRequest.tk_title_')}</h2>
-          <p className="mt-2 text-sm text-gray-600">{tAuth('resetPasswordRequest.tk_description_')}</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">{tAuth('resetPasswordRequest.tk_title_')}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{tAuth('resetPasswordRequest.tk_description_')}</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
             {resetPasswordMutation.isError && (
-              <Alert className="bg-red-50 text-red-800">
+              <Alert className="bg-destructive/10 text-destructive">
                 <AlertDescription>{tAuth('resetPasswordRequest.tk_errorMessage_')}</AlertDescription>
               </Alert>
             )}
@@ -142,7 +142,7 @@ export function ResetPasswordRequest() {
             </Button>
 
             <div className="text-center">
-              <Link to="/signin" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              <Link to="/signin" className="text-sm font-medium text-primary hover:text-primary/80">
                 {tAuth('callToAction.tk_backToSignin_')}
               </Link>
             </div>

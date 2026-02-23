@@ -143,8 +143,8 @@ export const LayoutSidebar = ({ ...props }: ComponentProps<typeof Sidebar>) => {
   const buttonClassName = cn(
     'mt-6 flex items-center gap-2 font-semibold transition-all duration-200',
     'rounded-sm shadow-none',
-    'bg-gradient-to-r from-orange-400 to-orange-600 text-white',
-    'hover:from-orange-500 hover:to-orange-700 hover:scale-[1.03]',
+    'bg-primary text-primary-foreground',
+    'hover:bg-primary/90 hover:scale-[1.03]',
     isCollapsed ? 'mx-2 overflow-hidden text-xs justify-center' : 'mx-3 px-4 py-2 text-base justify-start'
   )
 

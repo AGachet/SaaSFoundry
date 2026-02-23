@@ -42,7 +42,7 @@ export function NavUser() {
 
   const renderUserInfo = () => (
     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-      <Avatar initials={initials} bgColor="bg-[#D6E6FF]" textColor="text-[#3B82F6]" size="sm" />
+      <Avatar initials={initials} bgColor="bg-primary/15" textColor="text-primary" size="sm" />
       <div className="grid flex-1 text-left text-sm leading-tight">
         <span className="truncate font-semibold">{userName}</span>
         <span className="truncate text-xs">{user.email}</span>
@@ -56,7 +56,7 @@ export function NavUser() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <Avatar initials={initials} bgColor="bg-[#D6E6FF]" textColor="text-[#3B82F6]" size="sm" />
+              <Avatar initials={initials} bgColor="bg-primary/15" textColor="text-primary" size="sm" />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{userName}</span>
                 <span className="truncate text-xs">{user.email}</span>

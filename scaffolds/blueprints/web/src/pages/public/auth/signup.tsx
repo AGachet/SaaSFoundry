@@ -98,7 +98,7 @@ export function SignUp() {
                   <Input id={inputId} placeholder={placeholder} type={showPassword ? 'text' : 'password'} autoComplete={autoComplete} {...field} />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-hidden"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-hidden"
                     onClick={togglePasswordVisibility}
                     tabIndex={-1}
                   >
@@ -119,23 +119,23 @@ export function SignUp() {
   // Registration success view
   if (isRegistered) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-muted">
         <Card className="w-full max-w-md">
           <CardHeader>
             <div className="mb-4 flex justify-center">
-              <CheckCircle className="h-16 w-16 text-green-500" />
+              <CheckCircle className="h-16 w-16 text-emerald-500" />
             </div>
             <CardTitle className="text-center text-2xl">{tAuth('signup.tk_successTitle_')}</CardTitle>
             <CardDescription className="text-center">{tAuth('signup.tk_successDescription_')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="bg-blue-50 text-blue-800">
+            <Alert className="bg-primary/10 text-primary">
               <AlertDescription>{tAuth('signup.tk_verifyEmailDescription_', { userEmail: form.getValues('email') })}</AlertDescription>
             </Alert>
             <p className="text-center text-sm text-muted-foreground">{tAuth('signup.tk_checkSpam_')}</p>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Link to="/signin" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/signin" className="font-medium text-primary hover:text-primary/80">
               {tAuth('callToAction.tk_backToSignin_')}
             </Link>
           </CardFooter>
@@ -145,18 +145,18 @@ export function SignUp() {
   }
 
   return (
-    <div className="flex h-screen flex-col items-center bg-gray-50">
+    <div className="flex h-screen flex-col items-center bg-muted">
       <Logo isLong className="max-w-xs px-4 py-20" />
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
+      <div className="w-full max-w-md space-y-8 rounded-lg bg-card p-8 shadow-md">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">{tAuth('signup.tk_title_')}</h2>
-          <p className="mt-2 text-sm text-gray-600">{tAuth('signup.tk_description_')}</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">{tAuth('signup.tk_title_')}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{tAuth('signup.tk_description_')}</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
             {authError && (
-              <Alert className="bg-red-50 text-red-800">
+              <Alert className="bg-destructive/10 text-destructive">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" />
                   <AlertDescription>{authError}</AlertDescription>
@@ -185,14 +185,14 @@ export function SignUp() {
 
             <div className="flex items-center justify-center">
               <Separator className="w-1/3" />
-              <span className="mx-4 text-sm text-gray-500">{tCommon('other.tk_or_')}</span>
+              <span className="mx-4 text-sm text-muted-foreground">{tCommon('other.tk_or_')}</span>
               <Separator className="w-1/3" />
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {tAuth('signup.tk_alreadyAccount_')}{' '}
-                <Link to="/signin" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link to="/signin" className="font-medium text-primary hover:text-primary/80">
                   {tAuth('callToAction.tk_signin_')}
                 </Link>
               </p>

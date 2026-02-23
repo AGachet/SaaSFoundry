@@ -47,9 +47,9 @@ export function AccountManagement() {
 
   const tabTriggerClass = `
       transition-all duration-300
-      flex-1 p-1 rounded-sm uppercase opacity-70 border border-dashed border-gray-400 border-opacity-0
+      flex-1 p-1 rounded-sm uppercase opacity-70 border border-dashed border-muted-foreground/30 border-opacity-0
       hover:opacity-100 hover:border-opacity-60
-      data-[state=active]:opacity-100 data-[state=active]:border-opacity-0 data-[state=active]:bg-white data-[state=active]:font-bold data-[state=active]:text-sm data-[state=active]:text-muted-foreground data-[state=active]:shadow-none
+      data-[state=active]:opacity-100 data-[state=active]:border-opacity-0 data-[state=active]:bg-card data-[state=active]:font-bold data-[state=active]:text-sm data-[state=active]:text-muted-foreground data-[state=active]:shadow-none
     `
 
   return (
