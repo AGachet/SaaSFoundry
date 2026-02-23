@@ -38,8 +38,8 @@ import type { MeResponseDto } from '@/hooks/api/auth'
 /**
  * Constants
  */
-const ENTITIES_ICON_BG = 'bg-[#E5D8FF]'
-const ENTITIES_ICON_COLOR = 'text-[#A259FF]'
+const ENTITIES_ICON_BG = 'bg-violet-100 dark:bg-violet-500/20'
+const ENTITIES_ICON_COLOR = 'text-violet-500 dark:text-violet-400'
 
 /**
  * Search Filters Component
@@ -113,7 +113,7 @@ function EntitiesTable({ entities, isLoading, tCommon, tAccount }: EntitiesTable
       <TableBody>
         <TableRow>
           <TableCell colSpan={4} className="h-[calc(60vh-48px)]">
-            <div className="flex h-full flex-1 items-center justify-center gap-2 rounded-md border border-dashed border-gray-300/50 p-6">
+            <div className="flex h-full flex-1 items-center justify-center gap-2 rounded-md border border-dashed border-border/50 p-6">
               <Building2 className="text-muted-foreground opacity-40" size={18} />
               <span className="text-sm text-muted-foreground opacity-50">{tAccount('overview.recentEntities.tk_no-entity_')}</span>
             </div>
@@ -146,7 +146,7 @@ function EntitiesTable({ entities, isLoading, tCommon, tAccount }: EntitiesTable
           {/* Entity Status */}
           <TableCell>
             <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${entity.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <div className={`h-2 w-2 rounded-full ${entity.isActive ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/50'}`}></div>
               <span>{entity.isActive ? tCommon('status.tk_active_') : tCommon('status.tk_inactive_')}</span>
             </div>
           </TableCell>
@@ -287,7 +287,7 @@ export function AccountEntities() {
   return (
     <div className="space-y-6">
       {/* Filters & new entity */}
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-muted to-white">
+      <Card className="overflow-hidden border-none bg-muted">
         <CardContent className="flex justify-between gap-3 p-4">
           <SearchFilters searchTerm={searchInput} setSearchTerm={handleSearchChange} activeFilter={activeFilter} setActiveFilter={handleActiveFilterChange} tAccount={tAccount} tCommon={tCommon} />
           {hasPermission('ENTITY_CREATION') && (
@@ -300,7 +300,7 @@ export function AccountEntities() {
       </Card>
 
       {/* Entities Table */}
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-white shadow-sm">
+      <Card className="overflow-hidden border-none bg-card shadow-sm">
         <CardContent className="p-0">
           <ScrollArea className="h-[60vh]">
             <Table>
@@ -315,7 +315,7 @@ export function AccountEntities() {
                   <TableHead>
                     <div className="ml-2 flex items-center gap-2">
                       {tCommon('status.tk_title_')}
-                      {activeFilter !== undefined && <div className={`h-2 w-2 rounded-full ${activeFilter ? 'bg-green-500' : 'bg-gray-400'}`}></div>}
+                      {activeFilter !== undefined && <div className={`h-2 w-2 rounded-full ${activeFilter ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/50'}`}></div>}
                     </div>
                   </TableHead>
                   <TableHead>{tCommon('items.tk_organization_')}</TableHead>

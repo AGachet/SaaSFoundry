@@ -144,7 +144,7 @@ export function UserInvitation() {
                   <Input id={inputId} placeholder={placeholder} type={showPassword ? 'text' : 'password'} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-hidden"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-hidden"
                     onClick={togglePasswordVisibility}
                     tabIndex={-1}
                   >
@@ -165,11 +165,11 @@ export function UserInvitation() {
   // Show countdown if no token
   if (!invitationToken) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-muted">
         <Card className="w-full max-w-md p-8">
           <div className="text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900">{tAuth('userInvitation.tk_acceptInvitationError_')}</h2>
-            <p className="mt-2 text-sm text-gray-600">{tAuth('userInvitation.tk_redirecting_', { countdown })}</p>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">{tAuth('userInvitation.tk_acceptInvitationError_')}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{tAuth('userInvitation.tk_redirecting_', { countdown })}</p>
           </div>
         </Card>
       </div>
@@ -177,17 +177,17 @@ export function UserInvitation() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50">
+    <div className="flex h-screen items-center justify-center bg-muted">
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">{tAuth('userInvitation.tk_title_')}</h2>
-          <p className="mt-2 text-sm text-gray-600">{tAuth('userInvitation.tk_descriptionInvitation_')}</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">{tAuth('userInvitation.tk_title_')}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{tAuth('userInvitation.tk_descriptionInvitation_')}</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
             {(invitationError || acceptInvitationMutation.isError) && (
-              <Alert className="bg-red-50 text-red-800">
+              <Alert className="bg-destructive/10 text-destructive">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" />
                   <AlertDescription>{invitationError || tAuth('errors.tk_acceptInvitationError_')}</AlertDescription>

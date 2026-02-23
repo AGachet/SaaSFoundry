@@ -45,10 +45,10 @@ import type { MeResponseDto } from '@/hooks/api/auth'
 /**
  * Constants
  */
-const ENTITIES_ICON_BG = 'bg-[#E5D8FF]'
-const ENTITIES_ICON_COLOR = 'text-[#A259FF]'
-const ROLES_ICON_BG = 'bg-[#FFE6A7]'
-const ROLES_ICON_COLOR = 'text-[#B45309]'
+const ENTITIES_ICON_BG = 'bg-violet-100 dark:bg-violet-500/20'
+const ENTITIES_ICON_COLOR = 'text-violet-500 dark:text-violet-400'
+const ROLES_ICON_BG = 'bg-amber-100 dark:bg-amber-500/20'
+const ROLES_ICON_COLOR = 'text-amber-700 dark:text-amber-400'
 
 /**
  * Entity Filter Component
@@ -93,11 +93,11 @@ function EntityFilter({ selectedEntities, onEntitiesChange, tAccount, tCommon, a
       selected={selectedEntities}
       onChange={handleChange}
       items={items}
-      icon={<Building2 className="text-[#A259FF]" />}
+      icon={<Building2 className="text-violet-500 dark:text-violet-400" />}
       placeholder={tCommon('filters.tk_select-entities_')}
       selectedLabel={tCommon('filters.tk_select-entities_')}
-      badgeBg="bg-[#E5D8FF]"
-      badgeText="text-[#A259FF]"
+      badgeBg="bg-violet-100 dark:bg-violet-500/20"
+      badgeText="text-violet-500 dark:text-violet-400"
       loading={isLoading}
       emptyText={tAccount('entities.tk_table-no-entities_')}
       search={search}
@@ -149,11 +149,11 @@ function RoleFilter({ selectedRoles, onRolesChange, tAccount, tCommon, accountId
       selected={selectedRoles}
       onChange={handleChange}
       items={items}
-      icon={<ShieldCheck className="text-[#B45309]" />}
+      icon={<ShieldCheck className="text-amber-700 dark:text-amber-400" />}
       placeholder={tCommon('filters.tk_select-roles_')}
       selectedLabel={tCommon('filters.tk_selected-roles_')}
-      badgeBg="bg-[#FFE6A7]"
-      badgeText="text-[#B45309]"
+      badgeBg="bg-amber-100 dark:bg-amber-500/20"
+      badgeText="text-amber-700 dark:text-amber-400"
       loading={isLoading}
       emptyText={tAccount('roles.tk_table-no-roles_')}
       search={search}
@@ -216,7 +216,7 @@ function SearchFilters({
         <div
           data-testid="direct-users-switch-filter"
           className={`flex items-center gap-2 rounded-md border border-transparent px-3 py-2 transition-colors ${
-            includeDirectUsers ? 'bg-white ring-1 ring-slate-200' : 'bg-muted-foreground/5 hover:bg-white hover:ring-1 hover:ring-slate-200'
+            includeDirectUsers ? 'bg-card ring-1 ring-border' : 'bg-muted-foreground/5 hover:bg-card hover:ring-1 hover:ring-border'
           }`}
         >
           <Switch checked={includeDirectUsers} onCheckedChange={setIncludeDirectUsers} className="data-[state=checked]:bg-primary" />
@@ -278,7 +278,7 @@ function UsersTable({ users, isLoading, getFullName, tCommon, tAccount }: UsersT
           {/* User Name & Email */}
           <TableCell>
             <div className="flex items-center gap-3">
-              <Avatar initials={getInitials(user.people?.firstname, user.people?.lastname)} bgColor="bg-[#D6E6FF]" textColor="text-[#3B82F6]" size="md" />
+              <Avatar initials={getInitials(user.people?.firstname, user.people?.lastname)} bgColor="bg-blue-100 dark:bg-blue-500/20" textColor="text-blue-500 dark:text-blue-400" size="md" />
               <div>
                 <div className="flex items-center gap-1 font-medium">
                   {getFullName(user)}
@@ -298,7 +298,7 @@ function UsersTable({ users, isLoading, getFullName, tCommon, tAccount }: UsersT
           {/* User Status */}
           <TableCell>
             <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+              <div className={`h-2 w-2 rounded-full ${user.isActive ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/50'}`}></div>
               <span>{user.isActive ? tCommon('status.tk_active_') : tCommon('status.tk_inactive_')}</span>
             </div>
           </TableCell>
@@ -455,10 +455,10 @@ function InvitationsBadge() {
                       variant="outline"
                       className={`flex min-w-20 items-center justify-center rounded-sm px-3 py-4 text-xs capitalize ${
                         invitation.status === 'SENT'
-                          ? 'border-orange-200 bg-orange-50 text-orange-700'
+                          ? 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400'
                           : invitation.status === 'EXPIRED'
-                            ? 'border-red-200 bg-red-50 text-red-700'
-                            : 'border-green-200 bg-green-50 text-green-700'
+                            ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400'
+                            : 'border-green-200 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-400'
                       }`}
                     >
                       {invitation.status === 'SENT'
@@ -573,7 +573,7 @@ export function AccountUsers() {
   return (
     <div className="space-y-6">
       {/* Filters & new user */}
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-muted to-white">
+      <Card className="overflow-hidden border-none bg-muted">
         <CardContent className="flex gap-3 p-4">
           <SearchFilters
             searchTerm={searchInput}
@@ -601,7 +601,7 @@ export function AccountUsers() {
       </Card>
 
       {/* Users Table */}
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-background to-white shadow-sm">
+      <Card className="overflow-hidden border-none bg-card shadow-sm">
         <CardContent className="p-0">
           <ScrollArea className="h-[60vh]">
             <Table>
@@ -616,7 +616,7 @@ export function AccountUsers() {
                   <TableHead>
                     <div className="ml-2 flex items-center gap-2">
                       {tCommon('status.tk_title_')}
-                      {activeFilter !== undefined && <div className={`h-2 w-2 rounded-full ${activeFilter ? 'bg-green-500' : 'bg-gray-400'}`}></div>}
+                      {activeFilter !== undefined && <div className={`h-2 w-2 rounded-full ${activeFilter ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/50'}`}></div>}
                     </div>
                   </TableHead>
                   <TableHead>{tCommon('items.tk_entities_')}</TableHead>

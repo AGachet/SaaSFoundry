@@ -169,7 +169,7 @@ export function SignIn() {
               <div className="flex items-center justify-between">
                 <FormLabel htmlFor={inputId}>{label}</FormLabel>
                 {hasModuleAccess('USER_ACCOUNT_PASSWORD_RECOVERY') && (
-                  <Link to="/reset-password-request" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                  <Link to="/reset-password-request" className="text-sm font-medium text-primary hover:text-primary/80">
                     {tAuth('callToAction.tk_forgotPassword_')}
                   </Link>
                 )}
@@ -183,7 +183,7 @@ export function SignIn() {
                   <Input id={inputId} placeholder={placeholder} type={showPassword ? 'text' : 'password'} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-hidden"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-hidden"
                     onClick={togglePasswordVisibility}
                     tabIndex={-1}
                   >
@@ -204,7 +204,7 @@ export function SignIn() {
   // Afficher un état de chargement pendant le traitement du token
   if (!tokenProcessed) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-muted">
         <Card className="w-full max-w-md p-8">
           <div className="text-center">
             <p>{tCommon('loading.tk_loading_')}</p>
@@ -215,18 +215,18 @@ export function SignIn() {
   }
 
   return (
-    <div className="flex h-screen flex-col items-center bg-gray-50">
+    <div className="flex h-screen flex-col items-center bg-muted">
       <Logo isLong className="max-w-xs px-4 py-20" />
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">{tAuth('signin.tk_title_')}</h2>
-          <p className="mt-2 text-sm text-gray-600">{tAuth('signin.tk_description_')}</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">{tAuth('signin.tk_title_')}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{tAuth('signin.tk_description_')}</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
             {(authError || signInMutation.isError) && (
-              <Alert className="bg-red-50 text-red-800">
+              <Alert className="bg-destructive/10 text-destructive">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" />
                   <AlertDescription>{authError || tAuth('signin.tk_authError_')}</AlertDescription>
@@ -275,14 +275,14 @@ export function SignIn() {
               <>
                 <div className="flex items-center justify-center">
                   <Separator className="w-1/3" />
-                  <span className="mx-4 text-sm text-gray-500">{tCommon('other.tk_or_')}</span>
+                  <span className="mx-4 text-sm text-muted-foreground">{tCommon('other.tk_or_')}</span>
                   <Separator className="w-1/3" />
                 </div>
 
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {tAuth('signin.tk_noAccount_')}{' '}
-                    <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+                    <Link to="/signup" className="font-medium text-primary hover:text-primary/80">
                       {tAuth('callToAction.tk_signup_')}
                     </Link>
                   </p>

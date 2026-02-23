@@ -36,15 +36,15 @@ type RoleDto = AccountResponseDto['roles']['values'][0]
  *  Constants for colors and icons
  */
 const ICONS = {
-  users: <Users size={28} className="text-[#3B82F6]" />,
-  entities: <Building2 size={28} className="text-[#A259FF]" />,
-  roles: <ShieldCheck size={28} className="text-[#FBBF24]" />
+  users: <Users size={28} className="text-blue-500 dark:text-blue-400" />,
+  entities: <Building2 size={28} className="text-violet-500 dark:text-violet-400" />,
+  roles: <ShieldCheck size={28} className="text-amber-500 dark:text-amber-400" />
 }
 
 const ICON_BG = {
-  users: 'bg-[#D6E6FF]',
-  entities: 'bg-[#E5D8FF]',
-  roles: 'bg-[#FFE6A7]'
+  users: 'bg-blue-100 dark:bg-blue-500/20',
+  entities: 'bg-violet-100 dark:bg-violet-500/20',
+  roles: 'bg-amber-100 dark:bg-amber-500/20'
 }
 
 /**
@@ -160,19 +160,19 @@ function StatisticsCards({ account, tCommon }: StatisticsCardsProps) {
     <div className="flex h-full w-full gap-2">
       {/* Users */}
       <div aria-label="Users-count" className="flex flex-1 flex-col items-center justify-center gap-2 rounded-md border border-muted bg-muted/50 p-8">
-        <Avatar icon={<Users size={24} />} bgColor={ICON_BG.users} textColor="text-[#3B82F6]" size="lg" />
+        <Avatar icon={<Users size={24} />} bgColor={ICON_BG.users} textColor="text-blue-500 dark:text-blue-400" size="lg" />
         <span className="text-2xl font-bold">{account.users.count}</span>
         <span className="text-sm text-muted-foreground">{tCommon('items.tk_users_')}</span>
       </div>
       {/* Entities */}
       <div aria-label="Entities-count" className="flex flex-1 flex-col items-center justify-center gap-2 rounded-md border border-muted bg-muted/50 p-8">
-        <Avatar icon={<Building2 size={24} />} bgColor={ICON_BG.entities} textColor="text-[#A259FF]" size="lg" />
+        <Avatar icon={<Building2 size={24} />} bgColor={ICON_BG.entities} textColor="text-violet-500 dark:text-violet-400" size="lg" />
         <span className="text-2xl font-bold">{account.entities.count}</span>
         <span className="text-sm text-muted-foreground">{tCommon('items.tk_entities_')}</span>
       </div>
       {/* Roles */}
       <div aria-label="Roles-count" className="flex flex-1 flex-col items-center justify-center gap-2 rounded-md border border-muted bg-muted/50 p-8">
-        <Avatar icon={<ShieldCheck size={24} />} bgColor={ICON_BG.roles} textColor="text-[#FBBF24]" size="lg" />
+        <Avatar icon={<ShieldCheck size={24} />} bgColor={ICON_BG.roles} textColor="text-amber-500 dark:text-amber-400" size="lg" />
         <span className="text-2xl font-bold">{account.roles.count}</span>
         <span className="text-sm text-muted-foreground">{tCommon('items.tk_roles_')}</span>
       </div>
@@ -195,8 +195,8 @@ function RecentUsers({ users, tAccount }: RecentUsersProps) {
     subtitle: user.email,
     createdAt: user.createdAt,
     initials: getInitials(user.people?.firstname ?? '', user.people?.lastname ?? ''),
-    bgColor: 'bg-[#D6E6FF]',
-    textColor: 'text-[#3B82F6]'
+    bgColor: 'bg-blue-100 dark:bg-blue-500/20',
+    textColor: 'text-blue-500 dark:text-blue-400'
   }))
 
   return (
@@ -225,8 +225,8 @@ function RecentEntities({ entities, tAccount }: RecentEntitiesProps) {
     subtitle: entity.organization?.name,
     createdAt: entity.createdAt,
     initials: getInitials(entity.organization?.name ?? '', ''),
-    bgColor: 'bg-[#E5D8FF]',
-    textColor: 'text-[#A259FF]'
+    bgColor: 'bg-violet-100 dark:bg-violet-500/20',
+    textColor: 'text-violet-500 dark:text-violet-400'
   }))
 
   return (
