@@ -4,6 +4,11 @@
 import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react'
 
 /**
+ * Theme
+ */
+import { ThemeToggle } from '@/components/theme/theme-toggle'
+
+/**
  * Dependencies
  */
 import { useSignOut } from '@/hooks/api/auth/mutations/useSignOut'
@@ -72,6 +77,8 @@ export function NavUser() {
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <ThemeToggle />
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
               <LogOut className="mr-2 size-5" />

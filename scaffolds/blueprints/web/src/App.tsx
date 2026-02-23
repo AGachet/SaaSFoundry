@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@/components/theme/theme-provider'
 import { QueryProvider } from '@/lib/providers/query-provider'
 import { router } from '@/router/routes'
 import { Suspense } from 'react'
@@ -9,11 +10,13 @@ function App() {
   }
 
   return (
-    <QueryProvider>
-      <Suspense fallback={<div>Loading...</div>}>
-        <RouterProvider router={router} />
-      </Suspense>
-    </QueryProvider>
+    <ThemeProvider defaultTheme="system" storageKey="sf-theme">
+      <QueryProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <RouterProvider router={router} />
+        </Suspense>
+      </QueryProvider>
+    </ThemeProvider>
   )
 }
 

@@ -12,4 +12,8 @@ main-navigation:
 
 user-navigation:
   tk_account-management_: 'Gestion du compte'
+  tk_theme_: 'Thème'
+  tk_theme-light_: 'Clair'
+  tk_theme-dark_: 'Sombre'
+  tk_theme-system_: 'Système'
   tk_signout_: 'Se déconnecter'
