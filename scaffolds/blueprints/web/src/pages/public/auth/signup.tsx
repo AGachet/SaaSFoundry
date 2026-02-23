@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 /**
  * Components
  */
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button'
 import { Logo } from '@/components/ui/custom/logo'
 import { PasswordInput } from '@/components/ui/custom/password-input'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
@@ -131,6 +132,7 @@ export function SignUp() {
 
   return (
     <div className="flex h-screen flex-col items-center bg-muted">
+      <ThemeToggleButton />
       <Logo isLong className="max-w-xs px-4 py-20" />
       <div className="w-full max-w-md space-y-8 rounded-lg bg-card p-8 shadow-md">
         <div className="text-center">

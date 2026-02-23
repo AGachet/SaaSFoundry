@@ -16,6 +16,7 @@ import { extractTokenFromUrl } from '@/utils/tokenExtractor'
 /**
  * Components
  */
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button'
 import { PasswordInput } from '@/components/ui/custom/password-input'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
@@ -147,6 +148,7 @@ export function UserInvitation() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-muted">
+      <ThemeToggleButton />
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground">{tAuth('userInvitation.tk_title_')}</h2>
