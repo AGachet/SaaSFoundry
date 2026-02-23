@@ -51,9 +51,6 @@ export const useResetPassword = () => {
 
   const mutation = useMutation({
     mutationFn: async (data: ResetPasswordPayloadDto) => {
-      // Schema validation
-      schemas.payload.parse(data)
-
       // Send data to the API
       const response = await apiClient.post<ResetPasswordResponseDto>('/auth/reset-password', data)
       return schemas.response.parse(response)

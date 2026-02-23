@@ -57,9 +57,6 @@ export const useInviteUser = () => {
 
   const mutation = useMutation({
     mutationFn: async (data: InviteUserPayloadDto) => {
-      // Schema validation
-      schemas.payload.parse(data)
-
       // Add locale only if not provided
       const payload = {
         ...data,

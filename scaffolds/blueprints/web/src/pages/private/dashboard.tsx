@@ -19,8 +19,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     setBreadcrumb([{ label: tDashboard('tk_title_') }])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [setBreadcrumb, tDashboard])
 
   return (
     <div className="container mx-auto">

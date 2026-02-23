@@ -4,7 +4,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Mail, Search, X } from 'lucide-react'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
@@ -102,16 +102,6 @@ export function InviteUserDialog({ isOpen, onOpenChange }: InviteUserDialogProps
     }
   })
 
-  // Watch isDirectlyLinked to update accountIds
-  const isDirectlyLinked = form.watch('isDirectlyLinked')
-  React.useEffect(() => {
-    if (isDirectlyLinked && accountId) {
-      form.setValue('accountIds', [accountId])
-    } else {
-      form.setValue('accountIds', [])
-    }
-  }, [isDirectlyLinked, accountId, form])
-
   const handleSubmit = async (data: FormValues) => {
     const finalPayload: InviteUserPayloadDto = {
       email: data.email,
@@ -119,7 +109,7 @@ export function InviteUserDialog({ isOpen, onOpenChange }: InviteUserDialogProps
       lastname: data.lastname,
       roleIds: data.roleIds,
       entityIds: data.entityIds,
-      accountIds: data.accountIds
+      accountIds: data.isDirectlyLinked && accountId ? [accountId] : []
     }
 
     try {

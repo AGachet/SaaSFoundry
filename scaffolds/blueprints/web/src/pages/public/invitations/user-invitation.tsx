@@ -80,17 +80,13 @@ export function UserInvitation() {
     }
   }, [invitationToken, navigate])
 
-  // Redirect on successful invitation acceptance
-  useEffect(() => {
-    if (acceptInvitationMutation.isSuccess) {
-      navigate('/dashboard')
-    }
-  }, [acceptInvitationMutation.isSuccess, navigate])
-
   const onSubmit = (values: AcceptUserInvitationPayloadDto) => {
     setInvitationError(null)
 
     acceptInvitationMutation.submit(values, {
+      onSuccess: () => {
+        navigate('/dashboard')
+      },
       onError: () => {
         setInvitationError(tAuth('errors.tk_acceptInvitationError_'))
       }

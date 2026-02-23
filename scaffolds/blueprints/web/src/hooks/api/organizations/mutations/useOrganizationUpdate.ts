@@ -59,9 +59,6 @@ export const useOrganizationUpdate = (organizationId: string) => {
 
   const mutation = useMutation({
     mutationFn: async (data: OrganizationUpdatePayloadDto) => {
-      // Schema validation
-      schemas.payload.parse(data)
-
       // Send data to the API
       const response = await apiClient.patch<OrganizationUpdateResponseDto>(`/organizations/${organizationId}`, data)
       return schemas.response.parse(response)

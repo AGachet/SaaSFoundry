@@ -3,7 +3,7 @@
  */
 import { extractTokenFromUrl } from '@/utils/tokenExtractor'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -34,34 +34,29 @@ import { useResetPassword, useResetPasswordSchema, type ResetPasswordPayloadDto 
 export function ResetPassword() {
   const { t: tAuth } = useTranslation('auth')
   const { t: tCommon } = useTranslation('common')
-  const [tokenError, setTokenError] = useState<string | null>(null)
   const [resetPasswordToken] = useState(() => extractTokenFromUrl('resetPasswordToken'))
 
   // React Query mutation
   const resetPasswordMutation = useResetPassword()
   const isPasswordReset = resetPasswordMutation.isSuccess
 
-  // Validate token
-  useEffect(() => {
-    if (!resetPasswordToken) setTokenError(tAuth('resetPassword.tk_missingTokenError_'))
-    if (resetPasswordToken && resetPasswordToken.length < 20) setTokenError(tAuth('resetPassword.tk_invalidTokenError_'))
+  // Derive token error from state (no useEffect needed)
+  const tokenError = useMemo(() => {
+    if (!resetPasswordToken) return tAuth('resetPassword.tk_missingTokenError_')
+    if (resetPasswordToken.length < 20) return tAuth('resetPassword.tk_invalidTokenError_')
+    return null
   }, [resetPasswordToken, tAuth])
 
-  // Create form with schema
+  // Create form with schema — initialize token in defaultValues
   const schemas = useResetPasswordSchema()
   const form = useForm<ResetPasswordPayloadDto>({
     resolver: zodResolver(schemas.payload),
     defaultValues: {
-      resetPasswordToken: '',
+      resetPasswordToken: resetPasswordToken || '',
       password: '',
       confirmPassword: ''
     }
   })
-
-  // Update form when token is available
-  useEffect(() => {
-    if (resetPasswordToken) form.setValue('resetPasswordToken', resetPasswordToken)
-  }, [resetPasswordToken, form])
 
   const onSubmit = (values: ResetPasswordPayloadDto) => {
     resetPasswordMutation.submit(values)

@@ -90,9 +90,6 @@ export const useEntityCreate = () => {
 
   const mutation = useMutation({
     mutationFn: async (data: EntityCreatePayloadDto) => {
-      // Schema validation
-      schemas.payload.parse(data)
-
       // First, create the organization
       const organization = await createOrganization({
         name: data.organization.name,
