@@ -8,8 +8,15 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 /**
+ * Dependencies
+ */
+import { decodeJwtPayload } from '@/hooks/auth/useTokenDecoder'
+import { extractTokenFromUrl } from '@/utils/tokenExtractor'
+
+/**
  * Components
  */
+import { PasswordInput } from '@/components/ui/custom/password-input'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
 import { Card } from '@/components/ui/shadcn/card'
@@ -19,13 +26,12 @@ import { Input } from '@/components/ui/shadcn/input'
 /**
  * Icons
  */
-import { AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 /**
  * API
  */
 import { useAcceptUserInvitation, useAcceptUserInvitationSchema, type AcceptUserInvitationPayloadDto } from '@/hooks/api/invitations/mutations/useAcceptUserInvitation'
-import { extractTokenFromUrl } from '@/utils/tokenExtractor'
 
 /**
  * React declaration
@@ -36,8 +42,10 @@ export function UserInvitation() {
   const { t: tCommon } = useTranslation('common')
   const [invitationError, setInvitationError] = useState<string | null>(null)
   const [invitationToken] = useState(() => extractTokenFromUrl('invitationToken'))
-  const [showPassword, setShowPassword] = useState(false)
   const [countdown, setCountdown] = useState(5)
+
+  // Decode token once on mount
+  const tokenData = invitationToken ? decodeJwtPayload<{ firstname?: string; lastname?: string }>(invitationToken) : null
 
   // React Query mutation
   const acceptInvitationMutation = useAcceptUserInvitation()
@@ -49,35 +57,10 @@ export function UserInvitation() {
     defaultValues: {
       invitationToken: invitationToken || '',
       password: '',
-      firstname: '',
-      lastname: ''
+      firstname: tokenData?.firstname || '',
+      lastname: tokenData?.lastname || ''
     }
   })
-
-  // Decode token and set form values
-  useEffect(() => {
-    if (invitationToken) {
-      try {
-        const tokenParts = invitationToken.split('.')
-        if (tokenParts.length === 3) {
-          const tokenPayload = JSON.parse(atob(tokenParts[1]))
-          if (tokenPayload.firstname) {
-            form.setValue('firstname', tokenPayload.firstname)
-          }
-          if (tokenPayload.lastname) {
-            form.setValue('lastname', tokenPayload.lastname)
-          }
-        }
-      } catch (error) {
-        console.error('Error decoding token:', error)
-      }
-    }
-  }, [invitationToken, form])
-
-  // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
 
   // Redirect if no token
   useEffect(() => {
@@ -140,17 +123,7 @@ export function UserInvitation() {
             <FormLabel htmlFor={inputId}>{label}</FormLabel>
             <FormControl>
               {name === 'password' ? (
-                <div className="relative">
-                  <Input id={inputId} placeholder={placeholder} type={showPassword ? 'text' : 'password'} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-hidden"
-                    onClick={togglePasswordVisibility}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput id={inputId} placeholder={placeholder} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
               ) : (
                 <Input id={inputId} placeholder={placeholder} type={type} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
               )}

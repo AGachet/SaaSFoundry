@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import i18next from 'i18next'
 import { z } from 'zod'
 
+import { cleanParams } from '@/hooks/api/utils/cleanParams'
 import apiClient from '@/lib/api/client'
 import { useAccountSchema } from './useAccount'
 
@@ -62,23 +63,13 @@ export interface FetchAccountUsersParams {
 export const useAccountUsers = (accountId: string, params: FetchAccountUsersParams = {}) => {
   const schemas = useAccountUsersSchema()
 
-  // Transform params to match backend DTO and remove undefined and empty values
-  const cleanParams: Record<string, string | number | boolean | string[] | number[]> = {}
-
-  if (params.page !== undefined && params.page > 0) cleanParams.page = params.page
-  if (params.limit !== undefined && params.limit > 0) cleanParams.limit = params.limit
-  if (params.search !== undefined && params.search.trim() !== '') cleanParams.search = params.search
-  if (params.roleIds !== undefined && params.roleIds.length > 0) cleanParams.roleIds = params.roleIds
-  if (params.entityIds !== undefined && params.entityIds.length > 0) cleanParams.entityIds = params.entityIds
-  if (params.isActive !== undefined) cleanParams.isActive = params.isActive
-  if (params.orderBy !== undefined) cleanParams.orderBy = params.orderBy
-  if (params.includeDirectUsers !== undefined) cleanParams.includeDirectUsers = params.includeDirectUsers
+  const queryParams = cleanParams(params as Record<string, string | number | boolean | string[] | number[] | undefined>)
 
   return useQuery({
-    queryKey: ['account', accountId, 'users', cleanParams],
+    queryKey: ['account', accountId, 'users', queryParams],
     queryFn: async () => {
       try {
-        const response = await apiClient.get<AccountUsersResponseDto>(`/accounts/${accountId}/users`, cleanParams)
+        const response = await apiClient.get<AccountUsersResponseDto>(`/accounts/${accountId}/users`, queryParams)
         return schemas.response.parse(response)
       } catch (error) {
         console.error(tAccounts('errors.tk_fetchAccountUsersError_'), error)

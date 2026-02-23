@@ -12,12 +12,14 @@ import { Link, useNavigate } from 'react-router-dom'
  */
 import { useIsSessionActive } from '@/hooks/auth/useIsSession'
 import { useModuleAccess } from '@/hooks/auth/useModuleAccess'
+import { decodeJwtPayload } from '@/hooks/auth/useTokenDecoder'
 import { extractTokenFromUrl } from '@/utils/tokenExtractor'
 
 /**
  * Components
  */
 import { Logo } from '@/components/ui/custom/logo'
+import { PasswordInput } from '@/components/ui/custom/password-input'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
 import { Card } from '@/components/ui/shadcn/card'
@@ -28,7 +30,7 @@ import { Separator } from '@/components/ui/shadcn/separator'
 /**
  * Icons
  */
-import { AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 /**
  * API
@@ -44,9 +46,10 @@ export function SignIn() {
   const { t: tCommon } = useTranslation('common')
   const [authError, setAuthError] = useState<string | null>(null)
   const [confirmAccountToken] = useState(() => extractTokenFromUrl('confirmAccountToken'))
-  const [isFirstLogin, setIsFirstLogin] = useState(false)
-  const [tokenProcessed, setTokenProcessed] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+
+  // Decode token once on mount
+  const tokenData = confirmAccountToken ? decodeJwtPayload<{ firstname?: string; lastname?: string; email?: string }>(confirmAccountToken) : null
+  const isFirstLogin = !!confirmAccountToken
 
   // React Query mutation
   const signInMutation = useSignIn()
@@ -58,56 +61,12 @@ export function SignIn() {
   const form = useForm<SignInPayloadDto>({
     resolver: zodResolver(schemas.payload),
     defaultValues: {
-      email: '',
+      email: tokenData?.email || '',
       password: '',
-      firstname: '',
-      lastname: ''
+      firstname: tokenData?.firstname || '',
+      lastname: tokenData?.lastname || ''
     }
   })
-
-  // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
-
-  // Decode the token to extract information if necessary
-  useEffect(() => {
-    if (confirmAccountToken) {
-      try {
-        // Try to decode the token if possible to extract information
-        // Note: this implementation is simplified and depends on the actual token structure
-        // It may be necessary to use a library like jwt-decode
-        // or call an API to get the token information
-        const tokenParts = confirmAccountToken.split('.')
-        if (tokenParts.length === 3) {
-          const tokenPayload = JSON.parse(atob(tokenParts[1]))
-          const extractedData = {
-            firstname: tokenPayload.firstname,
-            lastname: tokenPayload.lastname,
-            email: tokenPayload.email
-          }
-
-          // Update form values with the extracted data
-          if (extractedData.email) {
-            form.setValue('email', extractedData.email)
-          }
-          if (extractedData.firstname) {
-            form.setValue('firstname', extractedData.firstname)
-          }
-          if (extractedData.lastname) {
-            form.setValue('lastname', extractedData.lastname)
-          }
-        }
-        setIsFirstLogin(true)
-        setTokenProcessed(true)
-      } catch (error) {
-        console.error('Erreur lors du décodage du token', error)
-        setTokenProcessed(true)
-      }
-    } else {
-      setTokenProcessed(true)
-    }
-  }, [confirmAccountToken, form])
 
   // Redirect on successful login
   useEffect(() => {
@@ -179,17 +138,7 @@ export function SignIn() {
             )}
             <FormControl>
               {name === 'password' ? (
-                <div className="relative">
-                  <Input id={inputId} placeholder={placeholder} type={showPassword ? 'text' : 'password'} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-hidden"
-                    onClick={togglePasswordVisibility}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput id={inputId} placeholder={placeholder} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
               ) : (
                 <Input id={inputId} placeholder={placeholder} type={type} autoComplete={autoComplete} tabIndex={tabIndex} {...field} />
               )}
@@ -198,19 +147,6 @@ export function SignIn() {
           </FormItem>
         )}
       />
-    )
-  }
-
-  // Afficher un état de chargement pendant le traitement du token
-  if (!tokenProcessed) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-muted">
-        <Card className="w-full max-w-md p-8">
-          <div className="text-center">
-            <p>{tCommon('loading.tk_loading_')}</p>
-          </div>
-        </Card>
-      </div>
     )
   }
 

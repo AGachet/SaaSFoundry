@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import i18next from 'i18next'
 import { z } from 'zod'
 
+import { cleanParams } from '@/hooks/api/utils/cleanParams'
 import apiClient from '@/lib/api/client'
 
 // Translation
@@ -63,20 +64,13 @@ export interface FetchAccountRolesParams {
 export const useAccountRoles = (accountId: string, params: FetchAccountRolesParams = {}) => {
   const schemas = useAccountRolesSchema()
 
-  // Transform params to match backend DTO and remove undefined and empty values
-  const cleanParams: Record<string, string | number | boolean> = {}
-
-  if (params.page !== undefined && params.page > 0) cleanParams.page = params.page
-  if (params.limit !== undefined && params.limit > 0) cleanParams.limit = params.limit
-  if (params.search !== undefined && params.search.trim() !== '') cleanParams.search = params.search
-  if (params.isActive !== undefined) cleanParams.isActive = params.isActive
-  if (params.orderBy !== undefined) cleanParams.orderBy = params.orderBy
+  const queryParams = cleanParams(params as Record<string, string | number | boolean | undefined>)
 
   return useQuery({
-    queryKey: ['account', accountId, 'roles', cleanParams],
+    queryKey: ['account', accountId, 'roles', queryParams],
     queryFn: async () => {
       try {
-        const response = await apiClient.get<AccountRolesResponseDto>(`/accounts/${accountId}/roles`, cleanParams)
+        const response = await apiClient.get<AccountRolesResponseDto>(`/accounts/${accountId}/roles`, queryParams)
         return schemas.response.parse(response)
       } catch (error) {
         console.error(tAccounts('errors.tk_fetchAccountRolesError_'), error)

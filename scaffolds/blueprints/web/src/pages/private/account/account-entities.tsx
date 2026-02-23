@@ -3,7 +3,7 @@
  */
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, Building2, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
  */
 import { EntityOrderBy, useAccountEntities } from '@/hooks/api/accounts/queries/useAccountEntities'
 import { useModuleAccess } from '@/hooks/auth/useModuleAccess'
+import { useDebounce } from '@/hooks/ui/useDebounce'
 import { formatDate } from '@/utils/format'
 
 /**
@@ -237,22 +238,13 @@ export function AccountEntities() {
   const { t: tCommon } = useTranslation('common')
   const queryClient = useQueryClient()
   const [searchInput, setSearchInput] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debouncedSearch = useDebounce(searchInput)
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined)
   const [orderBy, setOrderBy] = useState<EntityOrderBy>(EntityOrderBy.CREATED_AT)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(10)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const { hasPermission } = useModuleAccess()
-
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchInput)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [searchInput])
 
   // Get accountId from authMe
   const authMe = queryClient.getQueryData<MeResponseDto>(['authMe'])!

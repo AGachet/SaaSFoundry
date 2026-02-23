@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import i18next from 'i18next'
 import { z } from 'zod'
 
+import { cleanParams } from '@/hooks/api/utils/cleanParams'
 import apiClient from '@/lib/api/client'
 
 // Translation
@@ -73,22 +74,13 @@ export interface FetchAccountEntitiesParams {
 export const useAccountEntities = (accountId: string, params: FetchAccountEntitiesParams = {}) => {
   const schemas = useAccountEntitiesSchema()
 
-  // Transform params to match backend DTO and remove undefined and empty values
-  const cleanParams: Record<string, string | number | boolean | string[]> = {}
-
-  if (params.page !== undefined && params.page > 0) cleanParams.page = params.page
-  if (params.limit !== undefined && params.limit > 0) cleanParams.limit = params.limit
-  if (params.search !== undefined && params.search.trim() !== '') cleanParams.search = params.search
-  if (params.userIds !== undefined && params.userIds.length > 0) cleanParams.userIds = params.userIds
-  if (params.isActive !== undefined) cleanParams.isActive = params.isActive
-  if (params.includeInactiveUsers !== undefined) cleanParams.includeInactiveUsers = params.includeInactiveUsers
-  if (params.orderBy !== undefined) cleanParams.orderBy = params.orderBy
+  const queryParams = cleanParams(params as Record<string, string | number | boolean | string[] | undefined>)
 
   return useQuery({
-    queryKey: ['account', accountId, 'entities', cleanParams],
+    queryKey: ['account', accountId, 'entities', queryParams],
     queryFn: async () => {
       try {
-        const response = await apiClient.get<AccountEntitiesResponseDto>(`/accounts/${accountId}/entities`, cleanParams)
+        const response = await apiClient.get<AccountEntitiesResponseDto>(`/accounts/${accountId}/entities`, queryParams)
         return schemas.response.parse(response)
       } catch (error) {
         console.error(tAccounts('errors.tk_fetchAccountEntitiesError_'), error)
