@@ -18,6 +18,7 @@ import { extractTokenFromUrl } from '@/utils/tokenExtractor'
 /**
  * Components
  */
+import { ThemeToggleButton } from '@/components/theme/theme-toggle-button'
 import { Logo } from '@/components/ui/custom/logo'
 import { PasswordInput } from '@/components/ui/custom/password-input'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
@@ -152,6 +153,7 @@ export function SignIn() {
 
   return (
     <div className="flex h-screen flex-col items-center bg-muted">
+      <ThemeToggleButton />
       <Logo isLong className="max-w-xs px-4 py-20" />
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
