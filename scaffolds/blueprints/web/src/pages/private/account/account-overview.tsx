@@ -2,7 +2,7 @@
  * Resources
  */
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -292,11 +292,11 @@ export function AccountOverview() {
   const recentEntities = useMemo(() => account?.entities.values.slice(0, 5) ?? [], [account])
   const availableRoles = useMemo(() => account?.roles.values ?? [], [account])
 
-  useEffect(() => {
-    if (!accountId) {
-      signOut()
-    }
-  }, [accountId, signOut])
+  // If no accountId, sign out immediately
+  if (!accountId) {
+    signOut()
+    return null
+  }
 
   if (isLoading) {
     return (

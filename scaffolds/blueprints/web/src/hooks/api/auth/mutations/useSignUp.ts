@@ -57,9 +57,6 @@ export const useSignUp = () => {
 
   const mutation = useMutation({
     mutationFn: async (data: SignUpPayloadDto) => {
-      // Schema validation
-      schemas.payload.parse(data)
-
       // Add locale only if not provided
       const payload = {
         ...data,

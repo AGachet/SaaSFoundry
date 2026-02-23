@@ -38,8 +38,7 @@ export function AccountManagement() {
         description: tAccount(`tabs.tk_${currentTab}-description_`)
       }
     ])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab])
+  }, [currentTab, setBreadcrumb, tAccount])
 
   const handleTabChange = (value: string) => {
     navigate(`/account?tab=${value}`, { replace: true })

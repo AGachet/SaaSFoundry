@@ -58,9 +58,6 @@ export const useOrganizationCreate = () => {
 
   const mutation = useMutation({
     mutationFn: async (data: OrganizationCreatePayloadDto) => {
-      // Schema validation
-      schemas.payload.parse(data)
-
       // Send data to the API
       const response = await apiClient.post<OrganizationCreateResponseDto>('/organizations', data)
       return schemas.response.parse(response)
