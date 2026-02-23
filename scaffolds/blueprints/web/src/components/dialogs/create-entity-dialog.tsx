@@ -65,8 +65,6 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
     resolver: zodResolver(formSchema),
     defaultValues: {
       accountId: accountId,
-      name: '',
-      description: '',
       organization: {
         name: '',
         type: 'COMPANY',
@@ -136,39 +134,7 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {hasPermission('ENTITY_CREATION') && (
-              <div data-testid="entity-details" className="space-y-4 rounded-md border p-4">
-                <h3 className="text-sm font-medium">{tAccount('entities.tk_entity-details_')}</h3>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{tCommon('other.tk_name_')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{tCommon('other.tk_description_')}</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {hasPermission('ORGANIZATION_CREATION') && (
+            {hasPermission('ENTITY_CREATION') && hasPermission('ORGANIZATION_CREATION') && (
               <div data-testid="organization-details" className="space-y-4 rounded-md border p-4">
                 <h3 className="text-sm font-medium">{tAccount('organizations.tk_organization-details_')}</h3>
                 <FormField
