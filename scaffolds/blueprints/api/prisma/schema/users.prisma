@@ -22,8 +22,8 @@ enum TokenType {
  */
 model People {
   id          String    @id @default(cuid())
-  firstname   String?   @db.VarChar(30)
-  lastname    String?   @db.VarChar(30)
+  firstname   String?   @db.VarChar(80)
+  lastname    String?   @db.VarChar(80)
   email       String?   @db.VarChar(100)
   createdAt   DateTime  @default(now())               @map("created_at")
   updatedAt   DateTime  @updatedAt                    @map("updated_at")
@@ -82,6 +82,7 @@ model UserToken {
 
   @@unique([userId, type])
   @@index([userId])
+  @@index([token])
   @@map("user_tokens")
 }
 
@@ -90,7 +91,7 @@ model UserToken {
  */
 model Role {
   id                Int      @id @default(autoincrement())
-  name              String   @unique @db.VarChar(30)
+  name              String   @db.VarChar(30)
   description       String?  @db.VarChar(255)
   isActive          Boolean  @default(false)                  @map("is_active")
   accountId         String?                                   @map("account_id")
@@ -105,6 +106,7 @@ model Role {
   entitiesLinked    EntityRoleLink[]
   invitationsLinked InvitationRoleLink[]
 
+  @@unique([name, accountId])
   @@index([isActive])
   @@index([accountId])
   @@map("roles")

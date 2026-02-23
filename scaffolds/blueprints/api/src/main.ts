@@ -10,7 +10,6 @@ import 'dotenv/config'
 /**
  * Dependencies
  */
-import { GlobalExceptionFilter } from '@common/filters/global-exception.filter'
 import { Logger } from '@common/services/logger/logger.service'
 import { EnvConfig } from '@configs/env/services/env.service'
 import { ApiDocsService } from '@modules/api-docs/services/api-docs.service'
@@ -25,7 +24,6 @@ const bootstrap = async () => {
   const logger = app.get(Logger)
 
   app.setGlobalPrefix(env.get('API_PREFIX'))
-  app.useGlobalFilters(new GlobalExceptionFilter(logger))
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   app.use(cookieParser())
 

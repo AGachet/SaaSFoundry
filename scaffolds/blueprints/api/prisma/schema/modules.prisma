@@ -6,6 +6,7 @@ model ModuleType {
   name        String   @unique @db.VarChar(50)
   description String   @db.VarChar(255)
   createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   modules     Module[]
 
@@ -23,6 +24,7 @@ model Module {
   typeId      Int        @map("type_id")
   isActive    Boolean    @default(false) @map("is_active")
   createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
 
   type         ModuleType         @relation(fields: [typeId], references: [id], onDelete: Cascade)
 
@@ -59,7 +61,6 @@ model ModulePermission {
  * Table : Relation Roles - Modules
  */
 model RoleModuleLink {
-  id        Int      @id @default(autoincrement())
   roleId    Int                                      @map("role_id")
   moduleId  Int                                      @map("module_id")
   createdAt DateTime @default(now())                 @map("created_at")
@@ -68,7 +69,7 @@ model RoleModuleLink {
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
   module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
-  @@unique([roleId, moduleId])
+  @@id([roleId, moduleId])
   @@index([roleId])
   @@index([moduleId])
   @@map("roles_modules_links")

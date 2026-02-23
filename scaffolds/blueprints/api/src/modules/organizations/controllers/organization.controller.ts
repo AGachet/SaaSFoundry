@@ -1,8 +1,9 @@
 /**
  * Resources
  */
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common'
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 /**
  * Dependencies
@@ -23,13 +24,7 @@ import { FetchOrganizationResponseDto } from '@modules/organizations/dto/respons
 /**
  * Type
  */
-import type { User } from '@/generated/prisma/client'
-import type { Request } from 'express'
-
-// Extend Request type to include user property
-interface AuthenticatedRequest extends Request {
-  user: User
-}
+import type { AuthenticatedRequest } from '@common/types/authenticated-request.type'
 
 /**
  * Declaration
@@ -93,4 +88,18 @@ export class OrganizationController {
   async updateOrganization(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() updateOrganizationDto: UpdateOrganizationDto): Promise<FetchOrganizationResponseDto> {
     return this.organizationService.updateOrganization(req.user.id, id, updateOrganizationDto)
   }
+
+  // TODO storage-service-active: @Post(':id/logo')
+  // TODO storage-service-active: @RequirePermissions(['ORGANIZATION_UPDATE'], 'ORGANIZATION_ADMINISTRATION')
+  // TODO storage-service-active: @UseGuards(PermissionsGuard)
+  // TODO storage-service-active: @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_req, file, cb) => { const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']; if (allowedMimes.includes(file.mimetype)) { cb(null, true) } else { cb(new BadRequestException('Only image files are allowed (jpeg, png, webp, svg)'), false) } } }))
+  // TODO storage-service-active: @ApiOperation({ summary: 'Upload organization logo', description: 'Upload a logo image for the organization.' })
+  // TODO storage-service-active: @ApiConsumes('multipart/form-data')
+  // TODO storage-service-active: @ApiParam({ name: 'id', description: 'Organization ID' })
+  // TODO storage-service-active: @ApiResponse({ status: 200, description: 'Logo uploaded successfully', type: FetchOrganizationResponseDto })
+  // TODO storage-service-active: @ApiResponse({ status: 400, description: 'Invalid file type or size' })
+  // TODO storage-service-active: async uploadLogo(@Req() req: AuthenticatedRequest, @Param('id') id: string, @UploadedFile() file: Express.Multer.File): Promise<FetchOrganizationResponseDto> {
+  // TODO storage-service-active:   if (!file) throw new BadRequestException('No file uploaded')
+  // TODO storage-service-active:   return this.organizationService.uploadLogo(req.user.id, id, file)
+  // TODO storage-service-active: }
 }

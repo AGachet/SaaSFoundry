@@ -5,6 +5,7 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { JwtService } from '@nestjs/jwt'
 import { InvitationStatus, Locale, TokenType } from '@/generated/prisma/client'
 import * as bcrypt from 'bcrypt'
+import crypto from 'node:crypto'
 
 /**
  * Dependencies
@@ -264,7 +265,7 @@ export class InvitationService {
         user = await this.prisma.user.create({
           data: {
             email,
-            password: '', // Will be set when the invitation is accepted
+            password: await bcrypt.hash(crypto.randomUUID(), 10),
             isActive: false
           }
         })

@@ -104,6 +104,37 @@ const apiClient = {
 
   delete<T>(endpoint: string, customHeaders = {}): Promise<T> {
     return this.request<T>(endpoint, 'DELETE', undefined, { headers: customHeaders })
+  },
+
+  async upload<T>(endpoint: string, file: File, fieldName = 'file'): Promise<T> {
+    const baseApiUrl = '/api'
+    const url = `${baseApiUrl}${endpoint}`
+    const formData = new FormData()
+    formData.append(fieldName, file)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          queryClient.setQueryData(['authMe'], null)
+          localStorage.removeItem('authMe')
+        }
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP Error ${response.status}`)
+      }
+
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) return (await response.json()) as T
+      return {} as T
+    } catch (error) {
+      console.error('API Upload Error:', error)
+      throw error
+    }
   }
 }
 

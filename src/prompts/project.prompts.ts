@@ -171,6 +171,7 @@ export async function getUserStartProjectInputs() {
     }
   ])
 
+  // Handle MailerSend configuration immediately after email service choice
   if (answers.emailService === 'mailersend') {
     console.log(chalk.yellow('\nYou need to create an account on MailerSend to get your API key.'))
     console.log(chalk.yellow('Note: The following link is an affiliate link. We appreciate your support of the SaaSFoundry project by signing up through this link.'))
@@ -226,11 +227,75 @@ export async function getUserStartProjectInputs() {
         }
       ])
 
-      return { ...answers, ...mailerSendAnswers }
+      Object.assign(answers, mailerSendAnswers)
     } else {
       console.log(chalk.yellow('\nThe email service logic will be set up but disabled until you implement your own service.'))
     }
   }
 
-  return answers
+  // S3 storage setup (asked after email configuration)
+  const s3Answers = await inquirer.prompt<Answers>([
+    {
+      type: 'list',
+      name: 's3Setup',
+      message: 'Do you want to set up object storage (S3) for file uploads (logos, documents, etc.)?',
+      choices: [
+        {
+          name: 'Yes, set up MinIO with Docker (free, S3-compatible)',
+          value: 'docker'
+        },
+        {
+          name: 'Yes, connect to my existing S3-compatible server',
+          value: 'credentials'
+        },
+        { name: "No, I'll do it later", value: 'manual' }
+      ]
+    },
+    {
+      type: 'input',
+      name: 's3Credentials.endpoint',
+      message: 'S3 endpoint URL (e.g. https://s3.amazonaws.com or http://minio.example.com:9000)',
+      when: (s3: Answers) => s3.s3Setup === 'credentials',
+      validate: (input: string) => {
+        if (!input) return 'Endpoint URL is required'
+        return true
+      }
+    },
+    {
+      type: 'input',
+      name: 's3Credentials.accessKey',
+      message: 'S3 access key',
+      when: (s3: Answers) => s3.s3Setup === 'credentials',
+      validate: (input: string) => {
+        if (!input) return 'Access key is required'
+        return true
+      }
+    },
+    {
+      type: 'input',
+      name: 's3Credentials.secretKey',
+      message: 'S3 secret key',
+      when: (s3: Answers) => s3.s3Setup === 'credentials',
+      validate: (input: string) => {
+        if (!input) return 'Secret key is required'
+        return true
+      }
+    },
+    {
+      type: 'input',
+      name: 's3Credentials.bucket',
+      message: 'S3 bucket name',
+      when: (s3: Answers) => s3.s3Setup === 'credentials' || s3.s3Setup === 'docker',
+      default: () => `${answers.projectName}-uploads`
+    },
+    {
+      type: 'input',
+      name: 's3Credentials.region',
+      message: 'S3 region',
+      when: (s3: Answers) => s3.s3Setup === 'credentials',
+      default: 'us-east-1'
+    }
+  ])
+
+  return { ...answers, ...s3Answers }
 }

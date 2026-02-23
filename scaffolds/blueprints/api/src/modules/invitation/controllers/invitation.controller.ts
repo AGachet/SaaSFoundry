@@ -24,13 +24,8 @@ import { ListInvitationsResponseDto } from '@modules/invitation/dto/responses/li
 /**
  * Type
  */
-import type { User } from '@/generated/prisma/client'
-import type { Request, Response } from 'express'
-
-// Extend Request type to include user property
-interface AuthenticatedRequest extends Request {
-  user: User
-}
+import type { AuthenticatedRequest } from '@common/types/authenticated-request.type'
+import type { Response } from 'express'
 
 /**
  * Declaration

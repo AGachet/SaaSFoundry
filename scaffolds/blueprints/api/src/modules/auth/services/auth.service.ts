@@ -25,7 +25,7 @@ import type { User, UserToken } from '@/generated/prisma/client'
 import type { RequestPasswordResetDto } from '@modules/auth/dto/requests/request-password-reset.dto'
 import type { ResetPasswordDto } from '@modules/auth/dto/requests/reset-password.dto'
 import type { SignInDto } from '@modules/auth/dto/requests/signin.dto'
-import type { SignOutDto } from '@modules/auth/dto/requests/signout.dto'
+
 import type { SignUpDto } from '@modules/auth/dto/requests/signup.dto'
 
 import type { GuestResponseDto } from '@modules/auth/dto/responses/guest.response.dto'
@@ -156,8 +156,7 @@ export class AuthService {
     return { accessToken, refreshToken, userId: user.id }
   }
 
-  public async signOut(signOutDto: SignOutDto): Promise<SignOutResponseDto> {
-    const { userId } = signOutDto
+  public async signOut(userId: string): Promise<SignOutResponseDto> {
 
     this.logger.debug(`Logging out user with ID: ${userId}`, 'signout')
 
@@ -696,26 +695,26 @@ export class AuthService {
     try {
       this.logger.debug(`Creating profile for user ${email}`, 'createAndActivateUserProfile')
 
-      // Create People record
-      const person = await this.prisma.people.create({
-        data: {
-          firstname,
-          lastname,
-          email
-        }
-      })
-
-      // Create a default Account if needed and none specified
-      let defaultAccountId: string | undefined = undefined
-      if (createDefaultAccount && accountIds.length === 0 && entityIds.length === 0) {
-        const defaultAccount = await this.prisma.account.create({
-          data: {}
-        })
-        defaultAccountId = defaultAccount.id
-      }
-
-      // Start a transaction to ensure consistency
+      // Use a single transaction to ensure consistency for all operations
       return await this.prisma.$transaction(async (tx) => {
+        // Create People record
+        const person = await tx.people.create({
+          data: {
+            firstname,
+            lastname,
+            email
+          }
+        })
+
+        // Create a default Account if needed and none specified
+        let defaultAccountId: string | undefined = undefined
+        if (createDefaultAccount && accountIds.length === 0 && entityIds.length === 0) {
+          const defaultAccount = await tx.account.create({
+            data: {}
+          })
+          defaultAccountId = defaultAccount.id
+        }
+
         // Update user with isActive status and link to person
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -762,12 +761,15 @@ export class AuthService {
             }))
           })
         } else {
-          // If default account was created, add the admin role
-          // If no default account but no roles specified, add the default user role
+          // Resolve the role by name instead of using hardcoded IDs
+          const roleName = defaultAccountId ? UserDefaults.roles.admin : UserDefaults.roles.default
+          const role = await tx.role.findFirst({ where: { name: roleName } })
+          if (!role) throw new BadRequestException(`Default role '${roleName}' not found`)
+
           await tx.userRoleLink.create({
             data: {
               userId,
-              roleId: defaultAccountId ? UserDefaults.roles.admin : UserDefaults.roles.default
+              roleId: role.id
             }
           })
         }

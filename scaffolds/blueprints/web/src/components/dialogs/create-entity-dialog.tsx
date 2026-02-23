@@ -3,7 +3,8 @@
  */
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { Building2 } from 'lucide-react'
+import { Building2, ImagePlus, X } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
@@ -12,6 +13,7 @@ import { z } from 'zod'
  * Dependencies
  */
 import { useEntityCreate, useEntityCreateSchema } from '@/hooks/api/entities/mutations/useEntityCreate'
+import { useOrganizationLogoUpload } from '@/hooks/api/organizations/mutations/useOrganizationLogoUpload'
 import { useModuleAccess } from '@/hooks/auth/useModuleAccess'
 
 /**
@@ -28,6 +30,8 @@ import { Textarea } from '@/components/ui/shadcn/textarea'
  * Types
  */
 import type { MeResponseDto } from '@/hooks/api/auth'
+
+const STORAGE_ENABLED = import.meta.env.VITE_STORAGE_ENABLED === 'true'
 
 type CreateEntityDialogProps = {
   isOpen: boolean
@@ -47,6 +51,12 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
 
   // Create entity mutation
   const createEntity = useEntityCreate()
+  const uploadLogo = useOrganizationLogoUpload()
+
+  // Logo file state
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { payload: formSchema } = useEntityCreateSchema()
   type FormValues = z.infer<typeof formSchema>
@@ -66,15 +76,40 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
     }
   })
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setLogoFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => setLogoPreview(reader.result as string)
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null)
+    setLogoPreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   const handleSubmit = async (data: FormValues) => {
     try {
-      await createEntity.submitAsync({
+      const result = await createEntity.submitAsync({
         ...data
       })
+
+      // Upload logo if file selected and organization was created
+      if (logoFile && result.organization?.id) {
+        await uploadLogo.submitAsync({
+          organizationId: result.organization.id,
+          file: logoFile
+        })
+      }
 
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['account', accountId, 'entities'] })
       form.reset()
+      handleRemoveLogo()
       onOpenChange(false)
     } catch (error) {
       console.error('Failed to create entity:', error)
@@ -85,9 +120,12 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       form.reset()
+      handleRemoveLogo()
     }
     onOpenChange(open)
   }
+
+  const isLoading = createEntity.isLoading || uploadLogo.isLoading
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -200,13 +238,41 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
                     </FormItem>
                   )}
                 />
+                {STORAGE_ENABLED && (
+                  <div>
+                    <FormLabel>{tAccount('organizations.tk_logo_')}</FormLabel>
+                    <div className="mt-2">
+                      {logoPreview ? (
+                        <div className="relative inline-block">
+                          <img src={logoPreview} alt="Logo preview" className="h-20 w-20 rounded-md border object-cover" />
+                          <button
+                            type="button"
+                            onClick={handleRemoveLogo}
+                            className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex h-20 w-20 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/25 transition-colors hover:border-muted-foreground/50"
+                        >
+                          <ImagePlus className="h-6 w-6 text-muted-foreground/50" />
+                        </button>
+                      )}
+                      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={handleLogoChange} className="hidden" />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             <DialogFooter>
-              <Button type="submit" disabled={createEntity.isLoading}>
+              <Button type="submit" disabled={isLoading}>
                 <Building2 className="h-4 w-4" />
-                {createEntity.isLoading ? tCommon('actions.tk_loading_') : tCommon('actions.tk_create_')}
+                {isLoading ? tCommon('actions.tk_loading_') : tCommon('actions.tk_create_')}
               </Button>
             </DialogFooter>
           </form>

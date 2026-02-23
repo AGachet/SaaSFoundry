@@ -10,21 +10,21 @@ VALUES
 ------
 -- 2. Default module types
 ------
-INSERT INTO public.module_types (name, description)
+INSERT INTO public.module_types (name, description, updated_at)
 VALUES
-  ('USER_MANAGEMENT', 'User management-related modules'),
-  ('ACCOUNT_MANAGEMENT', 'Account management-related modules'),
-  ('ORGANIZATION_MANAGEMENT', 'Organization management-related modules');
+  ('USER_MANAGEMENT', 'User management-related modules', NOW()),
+  ('ACCOUNT_MANAGEMENT', 'Account management-related modules', NOW()),
+  ('ORGANIZATION_MANAGEMENT', 'Organization management-related modules', NOW());
 
 ------
 -- 3. Default modules
 ------
-INSERT INTO public.modules (name, type_id, version, description, is_active)
+INSERT INTO public.modules (name, type_id, version, description, is_active, updated_at)
 VALUES
-  ('USER_ACCOUNT_CREATION', (SELECT id FROM public.module_types WHERE name = 'USER_MANAGEMENT'), '1.0.0', 'User account creation module', TRUE),
-  ('USER_ACCOUNT_PASSWORD_RECOVERY', (SELECT id FROM public.module_types WHERE name = 'USER_MANAGEMENT'), '1.0.0', 'User password recovery module', TRUE),
-  ('ACCOUNT_ADMINISTRATION', (SELECT id FROM public.module_types WHERE name = 'ACCOUNT_MANAGEMENT'), '1.0.0', 'Account management module', TRUE),
-  ('ORGANIZATION_ADMINISTRATION', (SELECT id FROM public.module_types WHERE name = 'ORGANIZATION_MANAGEMENT'), '1.0.0', 'Organization management module', TRUE);
+  ('USER_ACCOUNT_CREATION', (SELECT id FROM public.module_types WHERE name = 'USER_MANAGEMENT'), '1.0.0', 'User account creation module', TRUE, NOW()),
+  ('USER_ACCOUNT_PASSWORD_RECOVERY', (SELECT id FROM public.module_types WHERE name = 'USER_MANAGEMENT'), '1.0.0', 'User password recovery module', TRUE, NOW()),
+  ('ACCOUNT_ADMINISTRATION', (SELECT id FROM public.module_types WHERE name = 'ACCOUNT_MANAGEMENT'), '1.0.0', 'Account management module', TRUE, NOW()),
+  ('ORGANIZATION_ADMINISTRATION', (SELECT id FROM public.module_types WHERE name = 'ORGANIZATION_MANAGEMENT'), '1.0.0', 'Organization management module', TRUE, NOW());
 
 ------
 -- 4. Default permissions by module
@@ -95,22 +95,21 @@ VALUES
 ------
 DO $$
 DECLARE
-  user_id UUID;
+  guest_user_id TEXT := 'clsystem00000000guest000000';
 BEGIN
   -- Create user record without a People association (not needed)
   INSERT INTO public.users (id, is_active, email, password, updated_at)
-  VALUES (gen_random_uuid(), TRUE, 'user@appguest.com', 'passwordNotUsed', NOW())
-  RETURNING id INTO user_id;
+  VALUES (guest_user_id, TRUE, 'user@appguest.com', 'passwordNotUsed', NOW());
 
   ------
   -- 8. Default user preference (guest user)
   ------
   INSERT INTO public.user_preferences (user_id, locale, updated_at)
-  VALUES (user_id, 'FR', NOW());
+  VALUES (guest_user_id, 'FR', NOW());
 
   ------
   -- 9. Link guest user to guest role
   ------
   INSERT INTO public.users_roles_links (user_id, role_id, updated_at)
-  VALUES (user_id, 1, NOW());
+  VALUES (guest_user_id, (SELECT id FROM public.roles WHERE name = 'guest'), NOW());
 END $$;

@@ -6,7 +6,7 @@ import { exec } from 'shelljs'
 import { blueprintsPath, CreateWebAppParams, overlaysPath } from '../types'
 import { fileExists, getNvmPrefix, validateProjectName } from '../utils'
 
-export async function createWebApp({ isMonorepo, projectName, projectDescription, frontendRepoUrl, mainBranch }: CreateWebAppParams) {
+export async function createWebApp({ isMonorepo, projectName, projectDescription, frontendRepoUrl, mainBranch, s3Setup }: CreateWebAppParams) {
   validateProjectName(projectName)
 
   // Create the WEB app directory
@@ -41,6 +41,16 @@ export async function createWebApp({ isMonorepo, projectName, projectDescription
     let deploymentYmlContent = await readFile(deploymentYmlPath, 'utf8')
     deploymentYmlContent = deploymentYmlContent.replace(/saasfoundry-network/g, `${projectName}-network`)
     await writeFile(deploymentYmlPath, deploymentYmlContent)
+  }
+
+  // Update storage enabled flag in .env
+  if (s3Setup !== 'manual') {
+    const webEnvPath = `${webPath}/.env`
+    if (await fileExists(webEnvPath)) {
+      let webEnvContent = await readFile(webEnvPath, 'utf8')
+      webEnvContent = webEnvContent.replace(/VITE_STORAGE_ENABLED=.*$/m, 'VITE_STORAGE_ENABLED="true"')
+      await writeFile(webEnvPath, webEnvContent)
+    }
   }
 
   // Initialize Git repository

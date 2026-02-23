@@ -24,13 +24,7 @@ import { UpdateEntityUsersResponseDto } from '@modules/entities/dto/responses/up
 /**
  * Type
  */
-import type { User } from '@/generated/prisma/client'
-import type { Request } from 'express'
-
-// Extend Request type to include user property
-interface AuthenticatedRequest extends Request {
-  user: User
-}
+import type { AuthenticatedRequest } from '@common/types/authenticated-request.type'
 
 /**
  * Declaration

@@ -16,7 +16,7 @@ import { AuthService } from '@modules/auth/services/auth.service'
 import { RequestPasswordResetDto } from '@modules/auth/dto/requests/request-password-reset.dto'
 import { ResetPasswordDto } from '@modules/auth/dto/requests/reset-password.dto'
 import { SignInDto } from '@modules/auth/dto/requests/signin.dto'
-import { SignOutDto } from '@modules/auth/dto/requests/signout.dto'
+
 import { SignUpDto } from '@modules/auth/dto/requests/signup.dto'
 
 import { GuestResponseDto } from '@modules/auth/dto/responses/guest.response.dto'
@@ -30,13 +30,8 @@ import { SignUpResponseDto } from '@modules/auth/dto/responses/signup.response.d
 /**
  * Type
  */
-import type { User } from '@/generated/prisma/client'
-import type { Request, Response } from 'express'
-
-// Extend Request type to include user property
-interface AuthenticatedRequest extends Request {
-  user: User
-}
+import type { AuthenticatedRequest } from '@common/types/authenticated-request.type'
+import type { Response } from 'express'
 
 /**
  * Declaration
@@ -78,8 +73,8 @@ export class AuthController {
   @ApiOkResponse({ type: SignOutResponseDto })
   @ApiUnauthorizedResponse({ description: 'Invalid refresh token.' })
   /** End -- Documentation */
-  async signOut(@Res({ passthrough: true }) response: Response, @Body() signOutDto: SignOutDto): Promise<SignOutResponseDto> {
-    const result = await this.authService.signOut(signOutDto)
+  async signOut(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) response: Response): Promise<SignOutResponseDto> {
+    const result = await this.authService.signOut(req.user.id)
     this.authService.clearAuthCookies(response)
     return result
   }

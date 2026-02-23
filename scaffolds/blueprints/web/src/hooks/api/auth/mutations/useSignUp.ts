@@ -25,9 +25,9 @@ export const useSignUpSchema = () => {
       .email({ message: tAuth('fields.tk_emailError_') }),
     password: z
       .string()
-      .min(6, { message: tAuth('fields.tk_passwordMinLength_') })
+      .min(8, { message: tAuth('fields.tk_passwordMinLength_') })
       .max(40)
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, {
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
         message: tAuth('fields.tk_passwordComplexityError_')
       }),
     locale: z

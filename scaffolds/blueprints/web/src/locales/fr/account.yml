@@ -66,6 +66,8 @@ organizations:
   tk_type-company_: Entreprise
   tk_type-association_: Association
   tk_type-community_: Communauté
+  tk_logo_: Logo
+  tk_logo-upload_: Téléverser le logo
 
 roles:
   tk_title_: Rôles du compte

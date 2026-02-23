@@ -16,7 +16,9 @@ export async function createApiApp({
   emailService,
   mailersendApiKey,
   mailersendSenderEmail,
-  mailersendSenderName
+  mailersendSenderName,
+  s3Setup,
+  s3Credentials
 }: CreateApiAppParams) {
   validateProjectName(projectName)
 
@@ -146,6 +148,78 @@ export async function createApiApp({
       .replace(/# MAILERSEND_API_KEY=.*$/m, `MAILERSEND_API_KEY="ms_test_fake_key_12345abcdef67890ghijklmnopqrstuvwxyz"`)
       .replace(/# MAILERSEND_SENDER_EMAIL=.*$/m, `MAILERSEND_SENDER_EMAIL="${mailersendSenderEmail}"`)
       .replace(/# MAILERSEND_SENDER_NAME=.*$/m, `MAILERSEND_SENDER_NAME="${mailersendSenderName}"`)
+    await writeFile(envTestPath, envTestContent)
+  }
+
+  // Update S3 storage configuration if selected
+  if (s3Setup !== 'manual') {
+    // Copy storage overlay module to the API
+    const storageOverlayPath = resolve(overlaysPath, 'modules/storage')
+    const apiStoragePath = `${apiPath}/src/modules/storage`
+    await copy(storageOverlayPath, apiStoragePath)
+
+    // Add @aws-sdk/client-s3 dependency and @types/multer for file uploads
+    const pkgPath = `${apiPath}/package.json`
+    const pkg = JSON.parse(await readFile(pkgPath, 'utf8'))
+    pkg.dependencies['@aws-sdk/client-s3'] = '3.750.0'
+    pkg.devDependencies['@types/multer'] = '2.0.0'
+    await writeFile(pkgPath, JSON.stringify(pkg, null, 2))
+    await exec(`${nvm}npm install --prefix ${apiPath} > /dev/null 2>&1`)
+
+    // Uncomment storage configuration in env.service.ts
+    const envServicePath = `${apiPath}/src/configs/env/services/env.service.ts`
+    let envServiceContent = await readFile(envServicePath, 'utf8')
+    envServiceContent = envServiceContent.replace(/\/\/ TODO storage-service-active: /g, '')
+    await writeFile(envServicePath, envServiceContent)
+
+    // Uncomment storage imports in app.module.ts
+    const appModulePath = `${apiPath}/src/app.module.ts`
+    let appModuleContent = await readFile(appModulePath, 'utf8')
+    appModuleContent = appModuleContent.replace(/\/\/ TODO storage-service-active: /g, '')
+    await writeFile(appModulePath, appModuleContent)
+
+    // Uncomment storage imports in organizations.module.ts
+    const orgModulePath = `${apiPath}/src/modules/organizations/organizations.module.ts`
+    let orgModuleContent = await readFile(orgModulePath, 'utf8')
+    orgModuleContent = orgModuleContent.replace(/\/\/ TODO storage-service-active: /g, '')
+    await writeFile(orgModulePath, orgModuleContent)
+
+    // Uncomment storage code in organization.controller.ts
+    const orgControllerPath = `${apiPath}/src/modules/organizations/controllers/organization.controller.ts`
+    let orgControllerContent = await readFile(orgControllerPath, 'utf8')
+    orgControllerContent = orgControllerContent.replace(/\/\/ TODO storage-service-active: /g, '')
+    await writeFile(orgControllerPath, orgControllerContent)
+
+    // Uncomment storage code in organization.service.ts
+    const orgServicePath = `${apiPath}/src/modules/organizations/services/organization.service.ts`
+    let orgServiceContent = await readFile(orgServicePath, 'utf8')
+    orgServiceContent = orgServiceContent.replace(/\/\/ TODO storage-service-active: /g, '')
+    await writeFile(orgServicePath, orgServiceContent)
+
+    // Determine S3 credentials
+    const s3Endpoint = s3Setup === 'docker' ? 'http://localhost:9000' : s3Credentials?.endpoint || ''
+    const s3AccessKey = s3Setup === 'docker' ? 'minioadmin' : s3Credentials?.accessKey || ''
+    const s3SecretKey = s3Setup === 'docker' ? 'minioadmin' : s3Credentials?.secretKey || ''
+    const s3Bucket = s3Credentials?.bucket || `${projectName}-uploads`
+    const s3Region = s3Credentials?.region || 'us-east-1'
+
+    // Update .env with S3 credentials
+    envContent = envContent
+      .replace(/# S3_ENDPOINT=.*$/m, `S3_ENDPOINT="${s3Endpoint}"`)
+      .replace(/# S3_ACCESS_KEY=.*$/m, `S3_ACCESS_KEY="${s3AccessKey}"`)
+      .replace(/# S3_SECRET_KEY=.*$/m, `S3_SECRET_KEY="${s3SecretKey}"`)
+      .replace(/# S3_BUCKET=.*$/m, `S3_BUCKET="${s3Bucket}"`)
+      .replace(/# S3_REGION=.*$/m, `S3_REGION="${s3Region}"`)
+
+    // Update .env.test with S3 test credentials
+    const envTestPath = `${apiPath}/.env.test`
+    let envTestContent = await readFile(envTestPath, 'utf8')
+    envTestContent = envTestContent
+      .replace(/# S3_ENDPOINT=.*$/m, `S3_ENDPOINT="http://localhost:9000"`)
+      .replace(/# S3_ACCESS_KEY=.*$/m, `S3_ACCESS_KEY="minioadmin"`)
+      .replace(/# S3_SECRET_KEY=.*$/m, `S3_SECRET_KEY="minioadmin"`)
+      .replace(/# S3_BUCKET=.*$/m, `S3_BUCKET="test-uploads"`)
+      .replace(/# S3_REGION=.*$/m, `S3_REGION="us-east-1"`)
     await writeFile(envTestPath, envTestContent)
   }
 

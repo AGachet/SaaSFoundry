@@ -46,7 +46,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message: exception instanceof HttpException ? exception.getResponse()['message'] || exception.message : exception.message
+      message: exception instanceof HttpException ? exception.getResponse()['message'] || exception.message : process.env.NODE_ENV === 'production' ? 'Internal server error' : exception.message
     })
   }
 

@@ -10,6 +10,7 @@ import { OrganizationType } from '@/generated/prisma/client'
 import { AccountAccessService } from '@common/services/account-access/account-access.service'
 import { Logger } from '@common/services/logger/logger.service'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
+// TODO storage-service-active: import { StorageService } from '@modules/storage/services/storage.service'
 
 /**
  * DTO
@@ -26,7 +27,8 @@ export class OrganizationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly logger: Logger,
-    private readonly accountAccessService: AccountAccessService
+    private readonly accountAccessService: AccountAccessService,
+    // TODO storage-service-active: private readonly storageService: StorageService
   ) {}
 
   /**
@@ -62,6 +64,7 @@ export class OrganizationService {
         type: organization.type,
         description: organization.description,
         website: organization.website,
+        logoUrl: organization.logoUrl,
         createdAt: organization.createdAt,
         updatedAt: organization.updatedAt
       }
@@ -89,7 +92,8 @@ export class OrganizationService {
             name: data.name,
             type: data.type,
             description: data.description,
-            website: data.website
+            website: data.website,
+            logoUrl: data.logoUrl
           }
         })
 
@@ -110,6 +114,7 @@ export class OrganizationService {
         type: result.type,
         description: result.description,
         website: result.website,
+        logoUrl: result.logoUrl,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt
       }
@@ -154,6 +159,7 @@ export class OrganizationService {
         type?: OrganizationType
         description?: string | null
         website?: string | null
+        logoUrl?: string | null
       } = {}
 
       // Only update fields that are present in the DTO
@@ -161,6 +167,7 @@ export class OrganizationService {
       if (data.type !== undefined) updateData.type = data.type
       if (data.description !== undefined) updateData.description = data.description
       if (data.website !== undefined) updateData.website = data.website
+      if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl
 
       // If no fields to update, return current organization
       if (Object.keys(updateData).length === 0) {
@@ -170,6 +177,7 @@ export class OrganizationService {
           type: existingOrganization.type,
           description: existingOrganization.description,
           website: existingOrganization.website,
+          logoUrl: existingOrganization.logoUrl,
           createdAt: existingOrganization.createdAt,
           updatedAt: existingOrganization.updatedAt
         }
@@ -186,6 +194,7 @@ export class OrganizationService {
         type: organization.type,
         description: organization.description,
         website: organization.website,
+        logoUrl: organization.logoUrl,
         createdAt: organization.createdAt,
         updatedAt: organization.updatedAt
       }
@@ -195,4 +204,40 @@ export class OrganizationService {
       throw new BadRequestException('Failed to update organization')
     }
   }
+
+  // TODO storage-service-active: /**
+  // TODO storage-service-active:  * Upload organization logo
+  // TODO storage-service-active:  */
+  // TODO storage-service-active: async uploadLogo(userId: string, id: string, file: Express.Multer.File): Promise<FetchOrganizationResponseDto> {
+  // TODO storage-service-active:   this.logger.debug(`Uploading logo for organization ${id}`, 'uploadLogo')
+  // TODO storage-service-active:   try {
+  // TODO storage-service-active:     const organization = await this.prisma.organization.findUnique({
+  // TODO storage-service-active:       where: { id },
+  // TODO storage-service-active:       include: { accountsLinked: { select: { accountId: true } } }
+  // TODO storage-service-active:     })
+  // TODO storage-service-active:     if (!organization) throw new NotFoundException(`Organization with ID ${id} not found`)
+  // TODO storage-service-active:     const accountId = organization.accountsLinked[0]?.accountId
+  // TODO storage-service-active:     if (!accountId) throw new NotFoundException('Organization is not linked to any account')
+  // TODO storage-service-active:     await this.accountAccessService.validateUserAccountAccess(userId, accountId, 'uploadLogo')
+  // TODO storage-service-active:     // Delete old logo if exists
+  // TODO storage-service-active:     if (organization.logoUrl) {
+  // TODO storage-service-active:       const oldKey = this.storageService.extractKeyFromUrl(organization.logoUrl)
+  // TODO storage-service-active:       if (oldKey) await this.storageService.deleteFile(oldKey).catch(() => {})
+  // TODO storage-service-active:     }
+  // TODO storage-service-active:     // Upload new logo
+  // TODO storage-service-active:     const key = this.storageService.buildKey(accountId, 'organizations', id, 'logos', file.originalname)
+  // TODO storage-service-active:     const logoUrl = await this.storageService.uploadFile(key, file.buffer, file.mimetype)
+  // TODO storage-service-active:     // Update organization with new logo URL
+  // TODO storage-service-active:     const updated = await this.prisma.organization.update({ where: { id }, data: { logoUrl } })
+  // TODO storage-service-active:     return {
+  // TODO storage-service-active:       id: updated.id, name: updated.name, type: updated.type,
+  // TODO storage-service-active:       description: updated.description, website: updated.website,
+  // TODO storage-service-active:       logoUrl: updated.logoUrl, createdAt: updated.createdAt, updatedAt: updated.updatedAt
+  // TODO storage-service-active:     }
+  // TODO storage-service-active:   } catch (error) {
+  // TODO storage-service-active:     if (error instanceof NotFoundException || error instanceof UnauthorizedException) throw error
+  // TODO storage-service-active:     this.logger.error(`Failed to upload logo: ${error.message}`, 'uploadLogo')
+  // TODO storage-service-active:     throw new BadRequestException('Failed to upload logo')
+  // TODO storage-service-active:   }
+  // TODO storage-service-active: }
 }

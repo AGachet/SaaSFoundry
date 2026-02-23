@@ -36,6 +36,7 @@ export const useOrganizationCreateSchema = () => {
     type: z.enum(['COMPANY', 'ASSOCIATION', 'COMMUNITY']),
     description: z.string().nullable(),
     website: z.string().nullable(),
+    logoUrl: z.string().nullable(),
     createdAt: z.string().transform((str) => new Date(str)),
     updatedAt: z.string().transform((str) => new Date(str))
   })

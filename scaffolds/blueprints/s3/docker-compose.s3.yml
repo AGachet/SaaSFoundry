@@ -1,0 +1,45 @@
+services:
+  s3-dev:
+    image: minio/minio:latest
+    container_name: saasfoundry-s3-dev
+    restart: 'no'
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - s3-dev-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - saasfoundry-network
+
+  s3-init:
+    image: minio/mc:latest
+    depends_on:
+      s3-dev:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://s3-dev:9000 minioadmin minioadmin;
+      mc mb --ignore-existing myminio/saasfoundry-uploads;
+      mc anonymous set download myminio/saasfoundry-uploads;
+      exit 0;
+      "
+    networks:
+      - saasfoundry-network
+
+volumes:
+  s3-dev-data:
+    driver: local
+
+networks:
+  saasfoundry-network:
+    external: true

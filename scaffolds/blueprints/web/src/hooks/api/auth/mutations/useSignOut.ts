@@ -21,17 +21,12 @@ const tAuth = (key: string) => i18next.t(key, { ns: 'auth' })
 import type { MeResponseDto } from '@/hooks/api/auth'
 
 export const useSignOutSchema = () => {
-  const payload = z.object({
-    userId: z.string()
-  })
-
   const response = z.object({
     message: z.string()
   })
-  return { payload, response }
+  return { response }
 }
 
-export type SignOutPayloadDto = z.infer<ReturnType<typeof useSignOutSchema>['payload']>
 export type SignOutResponseDto = z.infer<ReturnType<typeof useSignOutSchema>['response']>
 
 /**
@@ -50,12 +45,8 @@ export const useSignOut = () => {
     mutationFn: async () => {
       if (!me?.userId) return { message: 'User already signed out' }
 
-      // Schema validation
-      const payload: SignOutPayloadDto = { userId: me.userId }
-      schemas.payload.parse(payload)
-
-      // Send data to the API
-      const response = await apiClient.post<SignOutResponseDto>('/auth/signout', payload)
+      // Send data to the API (userId is extracted from JWT on the server)
+      const response = await apiClient.post<SignOutResponseDto>('/auth/signout')
       return schemas.response.parse(response)
     },
     onSuccess: async () => {

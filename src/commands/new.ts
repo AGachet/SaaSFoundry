@@ -6,9 +6,11 @@ import { exec } from 'shelljs'
 
 import { createApiApp } from '../builders/api.builder'
 import { createDbApp } from '../builders/db.builder'
+import { createS3App } from '../builders/s3.builder'
 import { createWebApp } from '../builders/web.builder'
 import { getUserStartProjectInputs } from '../prompts/project.prompts'
 import { initAndStartDb } from '../runners/database.runner'
+import { initAndStartS3 } from '../runners/s3.runner'
 import { startBackend, startFrontend, waitForServer } from '../runners/server.runner'
 import { getHuskySetupCommand, openTerminal } from '../runners/terminal.runner'
 import { checkNodeVersion, setDefaultDbCredentials } from '../utils'
@@ -36,7 +38,7 @@ export async function newCommand() {
   }).start()
 
   // Calculate total steps
-  const totalSteps = 3 + (startProjectAnswers.dbSetup === 'docker' ? 1 : 0)
+  const totalSteps = 3 + (startProjectAnswers.dbSetup === 'docker' ? 1 : 0) + (startProjectAnswers.s3Setup === 'docker' ? 1 : 0)
   let currentStep = 0
 
   const updateProgress = () => {
@@ -85,7 +87,9 @@ export async function newCommand() {
       emailService: startProjectAnswers.emailService,
       mailersendApiKey: startProjectAnswers.mailersendApiKey,
       mailersendSenderEmail: startProjectAnswers.mailersendSenderEmail,
-      mailersendSenderName: startProjectAnswers.mailersendSenderName
+      mailersendSenderName: startProjectAnswers.mailersendSenderName,
+      s3Setup: startProjectAnswers.s3Setup,
+      s3Credentials: startProjectAnswers.s3Credentials
     })
     updateProgress()
 
@@ -100,6 +104,17 @@ export async function newCommand() {
       updateProgress()
     }
 
+    // Create S3 app
+    if (startProjectAnswers.s3Setup === 'docker') {
+      spinner.text = 'Setting up S3 storage (MinIO)...'
+      await createS3App({
+        isMonorepo: startProjectAnswers.isMonorepo,
+        projectName: startProjectAnswers.projectName,
+        s3Credentials: startProjectAnswers.s3Credentials
+      })
+      updateProgress()
+    }
+
     // Create WEB app
     spinner.text = 'Setting up web application...'
     await createWebApp({
@@ -107,7 +122,8 @@ export async function newCommand() {
       projectName: startProjectAnswers.projectName,
       projectDescription: startProjectAnswers.projectDescription,
       frontendRepoUrl: startProjectAnswers.frontendRepoUrl || '',
-      mainBranch: startProjectAnswers.mainBranch
+      mainBranch: startProjectAnswers.mainBranch,
+      s3Setup: startProjectAnswers.s3Setup
     })
     updateProgress()
 
@@ -141,6 +157,19 @@ export async function newCommand() {
       try {
         await initAndStartDb(startProjectAnswers.projectName, startProjectAnswers.dbSetup, startProjectAnswers.isMonorepo, dbSpinner)
         dbSpinner.succeed(chalk.green('Database initialized and started successfully'))
+
+        // Start S3 if Docker setup was selected
+        if (startProjectAnswers.s3Setup === 'docker') {
+          const s3Spinner = ora('Starting MinIO S3 storage...').start()
+          try {
+            await initAndStartS3(startProjectAnswers.projectName, startProjectAnswers.isMonorepo, s3Spinner)
+            s3Spinner.succeed(chalk.green('MinIO S3 storage started successfully'))
+            console.log(chalk.blue('MinIO Console available at: http://localhost:9001'))
+          } catch (error) {
+            s3Spinner.fail(chalk.red('Failed to start MinIO S3 storage'))
+            console.error(error)
+          }
+        }
 
         // If database started successfully, propose to start apps
         const { startApps } = await inquirer.prompt<{

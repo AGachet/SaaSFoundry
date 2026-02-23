@@ -20,6 +20,7 @@ import { EntitiesModule } from '@modules/entities/entities.module'
 import { HealthModule } from '@modules/health/health.module'
 import { InvitationModule } from '@modules/invitation/invitation.module'
 import { OrganizationsModule } from '@modules/organizations/organizations.module'
+// TODO storage-service-active: import { StorageModule } from '@modules/storage/storage.module'
 
 /**
  * Declaration
@@ -37,6 +38,7 @@ import { OrganizationsModule } from '@modules/organizations/organizations.module
     OrganizationsModule,
     EntitiesModule,
     InvitationModule,
+    // TODO storage-service-active: StorageModule,
     ScheduleModule.forRoot()
   ],
   controllers: [],

@@ -31,6 +31,7 @@ model Invitation {
   @@index([inviterUserId])
   @@index([inviteeUserId])
   @@index([status])
+  @@index([inviteeUserEmail, status])
   @@map("invitations")
 }
 

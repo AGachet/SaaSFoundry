@@ -9,6 +9,14 @@ export interface DbCredentials {
   dbType: 'postgresql' | 'sql'
 }
 
+export interface S3Credentials {
+  endpoint: string
+  accessKey: string
+  secretKey: string
+  bucket: string
+  region: string
+}
+
 export interface Answers {
   projectName: string
   projectDescription: string
@@ -26,6 +34,8 @@ export interface Answers {
   mailersendApiKey?: string
   mailersendSenderEmail?: string
   mailersendSenderName?: string
+  s3Setup: 'docker' | 'credentials' | 'manual'
+  s3Credentials?: S3Credentials
 }
 
 export interface CreateApiAppParams {
@@ -39,6 +49,8 @@ export interface CreateApiAppParams {
   mailersendApiKey?: string
   mailersendSenderEmail?: string
   mailersendSenderName?: string
+  s3Setup: 'docker' | 'credentials' | 'manual'
+  s3Credentials?: S3Credentials
 }
 
 export interface CreateWebAppParams {
@@ -47,12 +59,19 @@ export interface CreateWebAppParams {
   projectDescription: string
   frontendRepoUrl: string
   mainBranch: string
+  s3Setup: 'docker' | 'credentials' | 'manual'
 }
 
 export interface CreateDbAppParams {
   isMonorepo: boolean
   projectName: string
   dbCredentials?: DbCredentials
+}
+
+export interface CreateS3AppParams {
+  isMonorepo: boolean
+  projectName: string
+  s3Credentials?: S3Credentials
 }
 
 // Paths

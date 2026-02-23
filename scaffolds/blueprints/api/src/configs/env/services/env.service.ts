@@ -48,6 +48,13 @@ export const envSchema = z.object({
   // TODO mailer-service-active: MAILERSEND_SENDER_EMAIL: z.string().email(),
   // TODO mailer-service-active: MAILERSEND_SENDER_NAME: z.string(),
 
+  // S3 Storage Configuration
+  // TODO storage-service-active: S3_ENDPOINT: z.string().url(),
+  // TODO storage-service-active: S3_ACCESS_KEY: z.string(),
+  // TODO storage-service-active: S3_SECRET_KEY: z.string(),
+  // TODO storage-service-active: S3_BUCKET: z.string(),
+  // TODO storage-service-active: S3_REGION: z.string().default('us-east-1'),
+
   // Log Configuration
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   LOG_DIR: z.string().default('logs')

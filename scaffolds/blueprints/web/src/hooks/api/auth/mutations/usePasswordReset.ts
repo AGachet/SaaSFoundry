@@ -22,11 +22,11 @@ export const useResetPasswordSchema = () => {
       resetPasswordToken: z.string(),
       password: z
         .string()
-        .min(6, { message: tAuth('fields.tk_passwordMinLength_') })
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, {
+        .min(8, { message: tAuth('fields.tk_passwordMinLength_') })
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, {
           message: tAuth('fields.tk_passwordComplexityError_')
         }),
-      confirmPassword: z.string().min(6)
+      confirmPassword: z.string().min(8)
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: tAuth('fields.tk_passwordsDoNotMatchError_'),

@@ -43,6 +43,14 @@ export class FetchOrganizationResponseDto {
   })
   website: string | null
 
+  @ApiPropertyOptional({
+    description: 'Organization logo URL',
+    example: 'https://s3.example.com/org/logo.png',
+    required: false,
+    nullable: true
+  })
+  logoUrl: string | null
+
   @ApiProperty({
     description: 'Organization creation date',
     example: '2024-03-06T12:00:00.000Z',

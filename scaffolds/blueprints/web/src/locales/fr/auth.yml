@@ -58,7 +58,7 @@ fields:
   tk_passwordRequired_: Le mot de passe est requis
   tk_newPassword_: Nouveau mot de passe
   tk_confirmPassword_: Confirmer le mot de passe
-  tk_passwordMinLength_: Le mot de passe doit contenir au moins 6 caractères
+  tk_passwordMinLength_: Le mot de passe doit contenir au moins 8 caractères
   tk_confirmPasswordError_: Le mot de passe de confirmation est requis
   tk_passwordsDoNotMatchError_: Les mots de passe ne correspondent pas
   tk_passwordComplexityError_: Le mot de passe doit contenir au moins 1 lettre majuscule, 1 lettre minuscule et 1 chiffre

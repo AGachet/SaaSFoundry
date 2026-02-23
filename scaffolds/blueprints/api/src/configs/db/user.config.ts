@@ -1,15 +1,15 @@
 import { Locale } from '@/generated/prisma/client'
 
-enum UserRoles {
-  GUEST = 1,
-  USER = 2,
-  ADMIN = 3
-}
+export const UserRoleNames = {
+  GUEST: 'guest',
+  USER: 'user',
+  ADMIN: 'admin'
+} as const
 
 export const UserDefaults = {
   roles: {
-    default: UserRoles.USER,
-    admin: UserRoles.ADMIN
+    default: UserRoleNames.USER,
+    admin: UserRoleNames.ADMIN
   },
   preferences: {
     locale: Locale.EN

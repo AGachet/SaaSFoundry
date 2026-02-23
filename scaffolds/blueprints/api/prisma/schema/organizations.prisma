@@ -18,6 +18,7 @@ model Organization {
   type        OrganizationType
   description String?       @db.VarChar(255)
   website     String?       @db.VarChar(100)
+  logoUrl     String?       @db.VarChar(500)         @map("logo_url")
   createdAt   DateTime      @default(now())          @map("created_at")
   updatedAt   DateTime      @updatedAt               @map("updated_at")
 

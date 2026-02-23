@@ -51,4 +51,14 @@ export class CreateOrganizationDto {
   @IsOptional()
   @MaxLength(100, { message: 'Website must not exceed 100 characters' })
   website?: string
+
+  @ApiPropertyOptional({
+    description: 'Organization logo URL',
+    example: 'https://s3.example.com/org/logo.png',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(500, { message: 'Logo URL must not exceed 500 characters' })
+  logoUrl?: string
 }

@@ -56,7 +56,7 @@ fields:
   tk_passwordRequired_: Password is required
   tk_newPassword_: New password
   tk_confirmPassword_: Confirm password
-  tk_passwordMinLength_: Password must contain at least 6 characters
+  tk_passwordMinLength_: Password must contain at least 8 characters
   tk_confirmPasswordError_: Confirm password is required
   tk_passwordsDoNotMatchError_: Passwords do not match
   tk_passwordComplexityError_: Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number
