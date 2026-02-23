@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
  * Components
  */
 import { Logo } from '@/components/ui/custom/logo'
+import { PasswordInput } from '@/components/ui/custom/password-input'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
@@ -21,7 +22,7 @@ import { Link } from 'react-router-dom'
 /**
  * Icons
  */
-import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { AlertCircle, CheckCircle } from 'lucide-react'
 
 /**
  * API
@@ -35,7 +36,6 @@ export function SignUp() {
   const { t: tAuth } = useTranslation('auth')
   const { t: tCommon } = useTranslation('common')
   const [authError, setAuthError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
 
   // React Query mutation
   const signUpMutation = useSignUp()
@@ -65,11 +65,6 @@ export function SignUp() {
     })
   }
 
-  // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
-
   // Reusable form field
   const renderFormField = ({
     name,
@@ -94,17 +89,7 @@ export function SignUp() {
             <FormLabel htmlFor={inputId}>{label}</FormLabel>
             <FormControl>
               {name === 'password' ? (
-                <div className="relative">
-                  <Input id={inputId} placeholder={placeholder} type={showPassword ? 'text' : 'password'} autoComplete={autoComplete} {...field} />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-hidden"
-                    onClick={togglePasswordVisibility}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput id={inputId} placeholder={placeholder} autoComplete={autoComplete} {...field} />
               ) : (
                 <Input id={inputId} placeholder={placeholder} type={type} autoComplete={autoComplete} {...field} />
               )}

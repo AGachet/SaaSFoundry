@@ -3,7 +3,7 @@
  */
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, Building2, Link, MailIcon, ShieldCheck, UserPlus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -15,6 +15,7 @@ import { useAccountRoles } from '@/hooks/api/accounts/queries/useAccountRoles'
 import { useAccountUsers, UserOrderBy } from '@/hooks/api/accounts/queries/useAccountUsers'
 import { useInvitedUsers } from '@/hooks/api/invitations/queries/useInvitedUsers'
 import { useModuleAccess } from '@/hooks/auth/useModuleAccess'
+import { useDebounce } from '@/hooks/ui/useDebounce'
 import { formatDate, getInitials } from '@/utils/format'
 
 /**
@@ -63,14 +64,7 @@ type EntityFilterProps = {
 
 function EntityFilter({ selectedEntities, onEntitiesChange, tAccount, tCommon, accountId }: EntityFilterProps) {
   const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [search])
+  const debouncedSearch = useDebounce(search, 300)
 
   const { data: entitiesData, isLoading } = useAccountEntities(accountId, {
     search: debouncedSearch,
@@ -119,14 +113,7 @@ type RoleFilterProps = {
 
 function RoleFilter({ selectedRoles, onRolesChange, tAccount, tCommon, accountId }: RoleFilterProps) {
   const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [search])
+  const debouncedSearch = useDebounce(search, 300)
 
   const { data: rolesData, isLoading } = useAccountRoles(accountId, {
     search: debouncedSearch,
@@ -497,7 +484,7 @@ export function AccountUsers() {
   const { t: tCommon } = useTranslation('common')
   const queryClient = useQueryClient()
   const [searchInput, setSearchInput] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debouncedSearch = useDebounce(searchInput)
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined)
   const [selectedEntities, setSelectedEntities] = useState<string[]>([])
   const [selectedRoles, setSelectedRoles] = useState<number[]>([])
@@ -507,15 +494,6 @@ export function AccountUsers() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
   const [includeDirectUsers, setIncludeDirectUsers] = useState(true)
   const { hasPermission } = useModuleAccess()
-
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchInput)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [searchInput])
 
   // Get accountId from authMe
   const authMe = queryClient.getQueryData<MeResponseDto>(['authMe'])!
