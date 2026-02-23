@@ -4,9 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/img/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SaaSFoudry</title>
+    <title>SaaSFoundry</title>
   </head>
   <body>
+    <script>
+      (function () {
+        const theme = localStorage.getItem('sf-theme') || 'system'
+        const root = document.documentElement
+        if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          root.classList.add('dark')
+        }
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
