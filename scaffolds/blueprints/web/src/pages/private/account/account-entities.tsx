@@ -126,49 +126,54 @@ function EntitiesTable({ entities, isLoading, tCommon, tAccount }: EntitiesTable
 
   return (
     <TableBody>
-      {entities.map((entity) => (
-        <TableRow key={entity.id}>
-          {/* Entity Name & Description */}
-          <TableCell>
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarFallback className={ENTITIES_ICON_BG}>
-                  <span className={ENTITIES_ICON_COLOR}>
-                    <Building2 className="h-5 w-5" />
-                  </span>
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-medium">{entity.name}</div>
-                <div className="text-sm text-muted-foreground">{entity.description || '-'}</div>
+      {entities.map((entity) => {
+        const displayName = entity.organization?.name || entity.name
+        const showEntityName = entity.organization && entity.name !== entity.organization.name
+
+        return (
+          <TableRow key={entity.id}>
+            {/* Organization / Entity Name */}
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarFallback className={ENTITIES_ICON_BG}>
+                    <span className={ENTITIES_ICON_COLOR}>
+                      <Building2 className="h-5 w-5" />
+                    </span>
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium">{displayName}</div>
+                  {showEntityName && <div className="text-sm text-muted-foreground">{entity.name}</div>}
+                </div>
               </div>
-            </div>
-          </TableCell>
-          {/* Entity Status */}
-          <TableCell>
-            <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${entity.isActive ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/50'}`}></div>
-              <span>{entity.isActive ? tCommon('status.tk_active_') : tCommon('status.tk_inactive_')}</span>
-            </div>
-          </TableCell>
-          {/* Entity Organization */}
-          <TableCell>
-            <div className="flex flex-wrap gap-1">
-              {entity.organization ? (
-                <Badge variant="outline" className={`${ENTITIES_ICON_BG} border-none`}>
-                  <span className={ENTITIES_ICON_COLOR}>{entity.organization.name}</span>
-                </Badge>
-              ) : (
-                <span className="text-xs text-muted-foreground">-</span>
-              )}
-            </div>
-          </TableCell>
-          {/* Entity Created At */}
-          <TableCell>
-            <div className="text-sm text-muted-foreground">{formatDate(entity.createdAt)}</div>
-          </TableCell>
-        </TableRow>
-      ))}
+            </TableCell>
+            {/* Entity Status */}
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <div className={`h-2 w-2 rounded-full ${entity.isActive ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/50'}`}></div>
+                <span>{entity.isActive ? tCommon('status.tk_active_') : tCommon('status.tk_inactive_')}</span>
+              </div>
+            </TableCell>
+            {/* Organization Type */}
+            <TableCell>
+              <div className="flex flex-wrap gap-1">
+                {entity.organization ? (
+                  <Badge variant="outline" className={`${ENTITIES_ICON_BG} border-none`}>
+                    <span className={ENTITIES_ICON_COLOR}>{entity.organization.name}</span>
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">-</span>
+                )}
+              </div>
+            </TableCell>
+            {/* Entity Created At */}
+            <TableCell>
+              <div className="text-sm text-muted-foreground">{formatDate(entity.createdAt)}</div>
+            </TableCell>
+          </TableRow>
+        )
+      })}
     </TableBody>
   )
 }

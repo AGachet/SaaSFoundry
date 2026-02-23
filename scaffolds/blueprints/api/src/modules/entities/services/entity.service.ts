@@ -43,11 +43,11 @@ export class EntityService {
       // Check if the account exists and user has access
       await this.accountAccessService.validateUserAccountAccess(userId, createEntityDto.accountId, 'createEntity')
 
-      // Create the entity
+      // Create the entity (name defaults to organization name if not provided)
       const entity = await this.prisma.entity.create({
         data: {
           isActive: true,
-          name: createEntityDto.name,
+          name: createEntityDto.name || organization.name,
           accountId: createEntityDto.accountId,
           description: createEntityDto.description || '',
           organizationId: createEntityDto.organizationId

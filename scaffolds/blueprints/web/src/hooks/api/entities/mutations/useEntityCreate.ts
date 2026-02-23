@@ -20,10 +20,7 @@ const tCommon = (key: string) => i18next.t(key, { ns: 'common' })
  */
 export const useEntityCreateSchema = () => {
   const payload = z.object({
-    name: z
-      .string()
-      .min(2, { message: tCommon('fields.errors.tk_minLength_') })
-      .max(100, { message: tCommon('fields.errors.tk_maxLength_') }),
+    name: z.string().max(100).optional(),
     description: z.string().max(255).optional(),
     accountId: z.string().min(1, { message: tCommon('fields.errors.tk_required_') }),
     organization: z.object({

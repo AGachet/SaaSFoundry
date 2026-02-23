@@ -9,12 +9,13 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
  */
 export class CreateEntityDto {
   @ApiProperty({
-    description: 'The name of the entity',
-    example: 'Finance Department'
+    description: 'The name of the entity. If omitted, defaults to the organization name.',
+    example: 'Finance Department',
+    required: false
   })
   @IsString()
-  @IsNotEmpty()
-  name: string
+  @IsOptional()
+  name?: string
 
   @ApiProperty({
     description: 'The description of the entity',

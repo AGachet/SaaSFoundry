@@ -58,8 +58,7 @@ entities:
   tk_filters-search-placeholder_: Rechercher des entités...
   tk_table-no-entities_: Aucune entité trouvée
   tk_create-entity_: Nouvelle entité
-  tk_create-entity-description_: Créez une nouvelle entité à associer à votre compte
-  tk_entity-details_: Détails de l'entité
+  tk_create-entity-description_: Créez une nouvelle entité avec son organisation
 
 organizations:
   tk_organization-details_: Détails de l'organisation
