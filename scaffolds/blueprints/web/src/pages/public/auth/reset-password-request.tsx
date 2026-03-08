@@ -12,16 +12,12 @@ import { Link } from 'react-router-dom'
  */
 import { ThemeToggleButton } from '@/components/theme/theme-toggle-button'
 import { Logo } from '@/components/ui/custom/logo'
+import { AuthSuccessCard } from '@/components/ui/custom/auth-success-card'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
+import { Card } from '@/components/ui/shadcn/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/shadcn/form'
 import { Input } from '@/components/ui/shadcn/input'
-
-/**
- * Icons
- */
-import { CheckCircle } from 'lucide-react'
 
 /**
  * API
@@ -52,7 +48,7 @@ export function ResetPasswordRequest() {
   const onSubmit = (values: RequestPasswordResetPayloadDto) => {
     setUserEmail(values.email)
 
-    // Utiliser la mutation React Query
+    // Use React Query mutation
     resetPasswordMutation.submit(values)
   }
 
@@ -88,28 +84,13 @@ export function ResetPasswordRequest() {
   // Success view
   if (isSubmitted) {
     return (
-      <div className="flex h-screen items-center justify-center bg-muted">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <div className="mb-4 flex justify-center">
-              <CheckCircle className="h-16 w-16 text-emerald-500" />
-            </div>
-            <CardTitle className="text-center text-2xl">{tAuth('resetPasswordRequest.tk_successTitle_')}</CardTitle>
-            <CardDescription className="text-center">{tAuth('resetPasswordRequest.tk_successDescription_')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-              <AlertDescription>{tAuth('resetPasswordRequest.tk_verifyResetPasswordDescription_', { userEmail })}</AlertDescription>
-            </Alert>
-            <p className="text-center text-sm text-muted-foreground">{tAuth('resetPasswordRequest.tk_checkSpam_')}</p>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Link to="/signin" className="font-medium text-primary hover:text-primary/80">
-              {tAuth('callToAction.tk_backToSignin_')}
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
+      <AuthSuccessCard
+        titleKey="resetPasswordRequest.tk_successTitle_"
+        descriptionKey="resetPasswordRequest.tk_successDescription_"
+        alertMessageKey="resetPasswordRequest.tk_verifyResetPasswordDescription_"
+        alertMessageParams={{ userEmail }}
+        extraTextKey="resetPasswordRequest.tk_checkSpam_"
+      />
     )
   }
 

@@ -1,5 +1,5 @@
 /**
- * Ressources
+ * Resources
  */
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowUpDown, Building2, Plus } from 'lucide-react'
