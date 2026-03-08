@@ -1,5 +1,5 @@
 /**
- * Resource
+ * Resources
  */
 import { extractTokenFromUrl } from '@/utils/tokenExtractor'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,16 +13,17 @@ import { Link } from 'react-router-dom'
  */
 import { ThemeToggleButton } from '@/components/theme/theme-toggle-button'
 import { Logo } from '@/components/ui/custom/logo'
+import { AuthSuccessCard } from '@/components/ui/custom/auth-success-card'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
+import { Card } from '@/components/ui/shadcn/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/shadcn/form'
 import { Input } from '@/components/ui/shadcn/input'
 
 /**
  * Icons
  */
-import { AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 /**
  * API
@@ -95,27 +96,11 @@ export function ResetPassword() {
   // Success view after password reset
   if (isPasswordReset) {
     return (
-      <div className="flex h-screen items-center justify-center bg-muted">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <div className="mb-4 flex justify-center">
-              <CheckCircle className="h-16 w-16 text-emerald-500" />
-            </div>
-            <CardTitle className="text-center text-2xl">{tAuth('resetPassword.tk_successTitle_')}</CardTitle>
-            <CardDescription className="text-center">{tAuth('resetPassword.tk_successDescription_')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-              <AlertDescription>{tAuth('resetPassword.tk_verifyPasswordUpdatedDescription_')}</AlertDescription>
-            </Alert>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Link to="/signin" className="font-medium text-primary hover:text-primary/80">
-              {tAuth('callToAction.tk_backToSignin_')}
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
+      <AuthSuccessCard
+        titleKey="resetPassword.tk_successTitle_"
+        descriptionKey="resetPassword.tk_successDescription_"
+        alertMessageKey="resetPassword.tk_verifyPasswordUpdatedDescription_"
+      />
     )
   }
 

@@ -12,9 +12,10 @@ import { useTranslation } from 'react-i18next'
 import { ThemeToggleButton } from '@/components/theme/theme-toggle-button'
 import { Logo } from '@/components/ui/custom/logo'
 import { PasswordInput } from '@/components/ui/custom/password-input'
+import { AuthSuccessCard } from '@/components/ui/custom/auth-success-card'
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert'
 import { Button } from '@/components/ui/shadcn/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
+import { Card } from '@/components/ui/shadcn/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/shadcn/form'
 import { Input } from '@/components/ui/shadcn/input'
 import { Separator } from '@/components/ui/shadcn/separator'
@@ -23,7 +24,7 @@ import { Link } from 'react-router-dom'
 /**
  * Icons
  */
-import { AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 /**
  * API
@@ -105,28 +106,13 @@ export function SignUp() {
   // Registration success view
   if (isRegistered) {
     return (
-      <div className="flex h-screen items-center justify-center bg-muted">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <div className="mb-4 flex justify-center">
-              <CheckCircle className="h-16 w-16 text-emerald-500" />
-            </div>
-            <CardTitle className="text-center text-2xl">{tAuth('signup.tk_successTitle_')}</CardTitle>
-            <CardDescription className="text-center">{tAuth('signup.tk_successDescription_')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-              <AlertDescription>{tAuth('signup.tk_verifyEmailDescription_', { userEmail: form.getValues('email') })}</AlertDescription>
-            </Alert>
-            <p className="text-center text-sm text-muted-foreground">{tAuth('signup.tk_checkSpam_')}</p>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Link to="/signin" className="font-medium text-primary hover:text-primary/80">
-              {tAuth('callToAction.tk_backToSignin_')}
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
+      <AuthSuccessCard
+        titleKey="signup.tk_successTitle_"
+        descriptionKey="signup.tk_successDescription_"
+        alertMessageKey="signup.tk_verifyEmailDescription_"
+        alertMessageParams={{ userEmail: form.getValues('email') }}
+        extraTextKey="signup.tk_checkSpam_"
+      />
     )
   }
 
