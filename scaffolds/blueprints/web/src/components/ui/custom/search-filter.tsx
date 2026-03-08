@@ -15,8 +15,8 @@ export function SearchFilter({ value, onChange, placeholder, className = '' }: S
       <Input
         placeholder={placeholder}
         className={`border-0 pl-9 shadow-none transition-colors placeholder:text-muted-foreground ${
-          value ? 'bg-white ring-1 ring-slate-200' : 'bg-muted-foreground/5'
-        } focus-visible:bg-white focus-visible:ring-1 focus-visible:ring-slate-200`}
+          value ? 'bg-card ring-1 ring-border' : 'bg-muted-foreground/5'
+        } focus-visible:bg-card focus-visible:ring-1 focus-visible:ring-border`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

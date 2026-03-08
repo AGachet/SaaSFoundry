@@ -25,7 +25,7 @@ type RecentListProps = {
 export function RecentList({ items, emptyIcon, emptyText, showLink = true, linkText, linkTo, gridLayout = false }: RecentListProps) {
   if (items.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center gap-2 rounded-md border border-dashed border-gray-300/50 p-6">
+      <div className="flex flex-1 items-center justify-center gap-2 rounded-md border border-dashed border-border p-6">
         {emptyIcon}
         <span className="text-sm text-muted-foreground opacity-50">{emptyText}</span>
       </div>

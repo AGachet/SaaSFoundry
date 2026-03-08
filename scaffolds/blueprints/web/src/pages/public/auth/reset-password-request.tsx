@@ -98,7 +98,7 @@ export function ResetPasswordRequest() {
             <CardDescription className="text-center">{tAuth('resetPasswordRequest.tk_successDescription_')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="bg-primary/10 text-primary">
+            <Alert className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
               <AlertDescription>{tAuth('resetPasswordRequest.tk_verifyResetPasswordDescription_', { userEmail })}</AlertDescription>
             </Alert>
             <p className="text-center text-sm text-muted-foreground">{tAuth('resetPasswordRequest.tk_checkSpam_')}</p>

@@ -69,7 +69,7 @@ export function MultiSelectFilter({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={`w-[300px] justify-start border-0 shadow-none transition-colors ${open || selected.length > 0 ? 'bg-white ring-1 ring-slate-200' : 'bg-muted-foreground/5 hover:bg-white hover:ring-1 hover:ring-slate-200 focus:bg-muted-foreground/5 focus:ring-0'} ${className}`}
+          className={`w-[300px] justify-start border-0 shadow-none transition-colors ${open || selected.length > 0 ? 'bg-card ring-1 ring-border' : 'bg-muted-foreground/5 hover:bg-card hover:ring-1 hover:ring-border focus:bg-muted-foreground/5 focus:ring-0'} ${className}`}
         >
           {icon && <span className="mr-2">{icon}</span>}
           {selected.length > 0 ? (
@@ -95,7 +95,7 @@ export function MultiSelectFilter({
               placeholder={placeholder}
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded border bg-white py-1 pl-7 pr-7 text-sm focus:border-gray-200 focus:outline-hidden focus:ring-0"
+              className="w-full rounded border border-border bg-transparent py-1 pl-7 pr-7 text-sm focus:border-border focus:outline-hidden focus:ring-0"
               style={{ boxShadow: 'none' }}
             />
             {selected.length > 0 && (
@@ -120,7 +120,7 @@ export function MultiSelectFilter({
           ) : displayItems.length === 0 ? (
             <div className="flex h-[70px] items-center justify-center text-sm text-muted-foreground">{emptyText}</div>
           ) : (
-            <div className="max-h-[200px] overflow-y-auto rounded-sm bg-white ring-1 ring-black/5">
+            <div className="max-h-[200px] overflow-y-auto rounded-sm bg-card ring-1 ring-border/50">
               {displayItems.map((item) => (
                 <div
                   key={item.id}
