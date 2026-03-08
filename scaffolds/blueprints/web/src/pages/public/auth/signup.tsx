@@ -115,7 +115,7 @@ export function SignUp() {
             <CardDescription className="text-center">{tAuth('signup.tk_successDescription_')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert className="bg-primary/10 text-primary">
+            <Alert className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
               <AlertDescription>{tAuth('signup.tk_verifyEmailDescription_', { userEmail: form.getValues('email') })}</AlertDescription>
             </Alert>
             <p className="text-center text-sm text-muted-foreground">{tAuth('signup.tk_checkSpam_')}</p>

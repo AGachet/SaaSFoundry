@@ -11,8 +11,8 @@ export function StatusFilter({ value, onChange, placeholder, className = '' }: S
   return (
     <div data-testid="status-filter" className={`relative ${className}`}>
       <div className="absolute left-5 top-1/2 -translate-y-1/2">
-        <div className={`flex h-5 w-5 items-center justify-center rounded-full ${value === true ? 'bg-green-100' : value === false ? 'bg-gray-200' : 'bg-blue-100'}`}>
-          <span className={`h-2 w-2 rounded-full ${value === true ? 'bg-green-500' : value === false ? 'bg-gray-400' : 'bg-blue-500'}`}></span>
+        <div className={`flex h-5 w-5 items-center justify-center rounded-full ${value === true ? 'bg-emerald-500/20' : value === false ? 'bg-muted' : 'bg-blue-500/20'}`}>
+          <span className={`h-2 w-2 rounded-full ${value === true ? 'bg-emerald-500' : value === false ? 'bg-muted-foreground/50' : 'bg-blue-500'}`}></span>
         </div>
       </div>
       <Select
@@ -25,8 +25,8 @@ export function StatusFilter({ value, onChange, placeholder, className = '' }: S
         <SelectTrigger
           className={`border-0 pl-10 shadow-none transition-colors ${
             value !== undefined
-              ? 'bg-white ring-1 ring-slate-200 focus:bg-white focus:ring-1 focus:ring-slate-200'
-              : 'bg-muted-foreground/5 hover:bg-white hover:ring-1 hover:ring-slate-200 focus:bg-muted-foreground/5 focus:ring-0'
+              ? 'bg-card ring-1 ring-border focus:bg-card focus:ring-1 focus:ring-border'
+              : 'bg-muted-foreground/5 hover:bg-card hover:ring-1 hover:ring-border focus:bg-muted-foreground/5 focus:ring-0'
           }`}
         >
           <SelectValue placeholder={placeholder} />
