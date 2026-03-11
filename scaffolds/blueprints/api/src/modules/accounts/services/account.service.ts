@@ -428,7 +428,7 @@ export class AccountService {
       }
 
       // Include users from entities
-      const entityClause: Prisma.UserWhereInput = {
+      accessConditions.push({
         entitiesLinked: {
           some: {
             entity: {
@@ -436,23 +436,7 @@ export class AccountService {
             }
           }
         }
-      }
-
-      // Apply entity filter if provided
-      if (filters.entityIds && filters.entityIds.length > 0) {
-        entityClause.entitiesLinked = {
-          some: {
-            entity: {
-              accountId,
-              id: {
-                in: filters.entityIds
-              }
-            }
-          }
-        }
-      }
-
-      accessConditions.push(entityClause)
+      })
 
       // Build search conditions if provided
       let searchConditions: Prisma.UserWhereInput | undefined
@@ -490,9 +474,26 @@ export class AccountService {
         this.logger.debug(`Search conditions: ${JSON.stringify(searchConditions)}`, 'fetchAccountUsers')
       }
 
+      // Build entity filter as a separate AND condition so it applies to all users (direct + entity-linked)
+      let entityFilterCondition: Prisma.UserWhereInput | undefined
+      if (filters.entityIds && filters.entityIds.length > 0) {
+        entityFilterCondition = {
+          entitiesLinked: {
+            some: {
+              entity: {
+                accountId,
+                id: {
+                  in: filters.entityIds
+                }
+              }
+            }
+          }
+        }
+      }
+
       // Combine all conditions
       const baseWhereClause: Prisma.UserWhereInput = {
-        AND: [{ OR: accessConditions }, ...(searchConditions ? [searchConditions] : [])]
+        AND: [{ OR: accessConditions }, ...(searchConditions ? [searchConditions] : []), ...(entityFilterCondition ? [entityFilterCondition] : [])]
       }
 
       this.logger.debug(`Final query: ${JSON.stringify(baseWhereClause)}`, 'fetchAccountUsers')
