@@ -3,6 +3,7 @@
  */
 import { ApiProperty } from '@nestjs/swagger'
 import { Locale } from '@/generated/prisma/client'
+import { Transform } from 'class-transformer'
 import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
 
 /**
@@ -14,6 +15,7 @@ export class CreateInvitationDto {
     example: 'john.doe@example.com'
   })
   @IsNotEmpty()
+  @Transform(({ value }) => value?.toLowerCase())
   @IsEmail()
   @MaxLength(100)
   email: string
