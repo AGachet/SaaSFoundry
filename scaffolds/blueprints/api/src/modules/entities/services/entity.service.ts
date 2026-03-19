@@ -29,45 +29,78 @@ export class EntityService {
   ) {}
 
   /**
-   * Create a new entity with an associated organization
+   * Create a new entity with an associated organization.
+   * Supports both linking to an existing organization (organizationId) and
+   * creating a new organization inline (organization) — all in one transaction.
    */
   async createEntity(userId: string, createEntityDto: CreateEntityDto): Promise<CreateEntityResponseDto> {
     try {
-      // Check if the organization exists
-      const organization = await this.prisma.organization.findUnique({
-        where: { id: createEntityDto.organizationId }
-      })
-
-      if (!organization) throw new NotFoundException(`Organization with ID ${createEntityDto.organizationId} not found`)
+      // Validate that either organizationId or inline organization data is provided
+      if (!createEntityDto.organizationId && !createEntityDto.organization) {
+        throw new BadRequestException('Either organizationId or organization data must be provided')
+      }
 
       // Check if the account exists and user has access
       await this.accountAccessService.validateUserAccountAccess(userId, createEntityDto.accountId, 'createEntity')
 
-      // Create the entity (name defaults to organization name if not provided)
-      const entity = await this.prisma.entity.create({
-        data: {
-          isActive: true,
-          name: createEntityDto.name || organization.name,
-          accountId: createEntityDto.accountId,
-          description: createEntityDto.description || '',
-          organizationId: createEntityDto.organizationId
+      // Create everything in a single transaction
+      const result = await this.prisma.$transaction(async (tx) => {
+        let organization
+
+        if (createEntityDto.organization) {
+          // Create the organization and link it to the account
+          organization = await tx.organization.create({
+            data: {
+              name: createEntityDto.organization.name,
+              type: createEntityDto.organization.type,
+              description: createEntityDto.organization.description,
+              website: createEntityDto.organization.website
+            }
+          })
+
+          await tx.organizationAccountLink.create({
+            data: {
+              organizationId: organization.id,
+              accountId: createEntityDto.accountId
+            }
+          })
+        } else {
+          // Use existing organization
+          organization = await tx.organization.findUnique({
+            where: { id: createEntityDto.organizationId }
+          })
+
+          if (!organization) throw new NotFoundException(`Organization with ID ${createEntityDto.organizationId} not found`)
         }
+
+        // Create the entity (name defaults to organization name if not provided)
+        const entity = await tx.entity.create({
+          data: {
+            isActive: true,
+            name: createEntityDto.name || organization.name,
+            accountId: createEntityDto.accountId,
+            description: createEntityDto.description || '',
+            organizationId: organization.id
+          }
+        })
+
+        return { entity, organization }
       })
 
       return {
-        id: entity.id,
-        name: entity.name,
-        isActive: entity.isActive,
-        createdAt: entity.createdAt,
-        updatedAt: entity.updatedAt,
-        description: entity.description || '',
+        id: result.entity.id,
+        name: result.entity.name,
+        isActive: result.entity.isActive,
+        createdAt: result.entity.createdAt,
+        updatedAt: result.entity.updatedAt,
+        description: result.entity.description || '',
         organization: {
-          id: organization.id,
-          name: organization.name
+          id: result.organization.id,
+          name: result.organization.name
         }
       }
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof UnauthorizedException) throw error
+      if (error instanceof NotFoundException || error instanceof UnauthorizedException || error instanceof BadRequestException) throw error
       this.logger.error(`Failed to create entity: ${error.message}`, 'createEntity')
       throw new BadRequestException('Failed to create entity')
     }

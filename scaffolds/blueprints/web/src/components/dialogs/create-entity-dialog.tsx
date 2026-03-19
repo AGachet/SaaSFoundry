@@ -96,19 +96,24 @@ export function CreateEntityDialog({ isOpen, onOpenChange }: CreateEntityDialogP
         ...data
       })
 
-      // Upload logo if file selected and organization was created
-      if (logoFile && result.organization?.id) {
-        await uploadLogo.submitAsync({
-          organizationId: result.organization.id,
-          file: logoFile
-        })
-      }
-
-      // Invalidate queries to refresh data
+      // Entity created — close dialog and reset form immediately to prevent duplicate submissions
       await queryClient.invalidateQueries({ queryKey: ['account', accountId, 'entities'] })
       form.reset()
       handleRemoveLogo()
       onOpenChange(false)
+
+      // Upload logo after dialog is closed (best-effort, non-blocking)
+      if (logoFile && result.organization?.id) {
+        try {
+          await uploadLogo.submitAsync({
+            organizationId: result.organization.id,
+            file: logoFile
+          })
+          await queryClient.invalidateQueries({ queryKey: ['account', accountId, 'entities'] })
+        } catch (logoError) {
+          console.error('Failed to upload logo:', logoError)
+        }
+      }
     } catch (error) {
       console.error('Failed to create entity:', error)
     }

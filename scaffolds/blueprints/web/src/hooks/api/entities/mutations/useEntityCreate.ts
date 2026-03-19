@@ -8,7 +8,6 @@ import { z } from 'zod'
 /**
  * Dependencies
  */
-import { useOrganizationCreate } from '@/hooks/api/organizations/mutations/useOrganizationCreate'
 import apiClient from '@/lib/api/client'
 
 // Translation
@@ -83,25 +82,20 @@ export type EntityCreateResponseDto = z.infer<ReturnType<typeof useEntityCreateS
  */
 export const useEntityCreate = () => {
   const schemas = useEntityCreateSchema()
-  const { submitAsync: createOrganization } = useOrganizationCreate()
 
   const mutation = useMutation({
     mutationFn: async (data: EntityCreatePayloadDto) => {
-      // First, create the organization
-      const organization = await createOrganization({
-        name: data.organization.name,
-        type: data.organization.type,
-        accountId: data.accountId,
-        description: data.organization.description,
-        website: data.organization.website
-      })
-
-      // Then, create the entity with the organization ID
+      // Single API call — backend creates org + entity in one transaction
       const response = await apiClient.post<EntityCreateResponseDto>('/entities', {
         name: data.name,
         description: data.description,
-        organizationId: organization.id,
-        accountId: data.accountId
+        accountId: data.accountId,
+        organization: {
+          name: data.organization.name,
+          type: data.organization.type,
+          description: data.organization.description,
+          website: data.organization.website
+        }
       })
 
       return schemas.response.parse(response)
