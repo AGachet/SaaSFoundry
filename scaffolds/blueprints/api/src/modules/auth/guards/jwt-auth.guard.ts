@@ -77,9 +77,40 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements OnModuleInit {
       const payload = this.authService.decodeToken(tokens.accessToken)
 
       // Get the user from the payload and set it directly in the request
+      // Include the same relations as JwtStrategy.validate() so PermissionsGuard can work
       if (payload && payload.sub) {
         const user = await this.prismaService.user.findUnique({
-          where: { id: payload.sub }
+          where: { id: payload.sub },
+          include: {
+            rolesLinked: {
+              where: {
+                role: {
+                  isActive: true
+                }
+              },
+              include: {
+                role: {
+                  include: {
+                    modulesLinked: {
+                      where: {
+                        module: {
+                          isActive: true
+                        }
+                      },
+                      include: {
+                        module: true
+                      }
+                    },
+                    permissionsLinked: {
+                      include: {
+                        permission: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         })
 
         if (!user) {
