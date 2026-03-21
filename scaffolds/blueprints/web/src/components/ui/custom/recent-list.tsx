@@ -50,7 +50,7 @@ export function RecentList({ items, emptyIcon, emptyText, showLink = true, linkT
       </ul>
       {showLink && linkText && linkTo && (
         <div className="mt-5 flex justify-end px-1">
-          <Link to={linkTo} className="text-primary transition hover:opacity-80">
+          <Link to={linkTo} className="cursor-pointer text-primary transition hover:opacity-80">
             {linkText}
           </Link>
         </div>
