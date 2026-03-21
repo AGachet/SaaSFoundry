@@ -42,6 +42,9 @@ export interface TestUser {
  * @returns The created user data
  */
 export async function setupTestUser(prisma: PrismaService, config: TestUserConfig): Promise<TestUser> {
+  // Normalize email to lowercase (matches real app behavior where DTOs transform emails to lowercase)
+  config.email = config.email.toLowerCase()
+
   // Check if the user already exists
   const existingUser = await prisma.user.findUnique({
     where: { email: config.email },

@@ -244,6 +244,10 @@ class AuthServiceTest extends ServiceTestBase<AuthService> {
             token: 'valid.token',
             type: 'ACCOUNT_VALIDATION'
           })
+          prismaServiceAny.userToken.delete = jest.fn().mockResolvedValue({})
+          prismaServiceAny.userToken.create.mockResolvedValue({ id: '1', token: 'mock.token' })
+
+          // Mock $transaction to execute the callback with the prisma mock as tx
           prismaServiceAny.people.create.mockResolvedValue({
             id: '2',
             firstname: 'John',
@@ -256,7 +260,10 @@ class AuthServiceTest extends ServiceTestBase<AuthService> {
             isActive: true,
             peopleId: '2'
           })
-          prismaServiceAny.userToken.create.mockResolvedValue({ id: '1', token: 'mock.token' })
+          prismaServiceAny.userAccountLink = { createMany: jest.fn().mockResolvedValue({}) }
+          prismaServiceAny.role = { findFirst: jest.fn().mockResolvedValue({ id: 1, name: 'admin' }) }
+          prismaServiceAny.userRoleLink = { create: jest.fn().mockResolvedValue({}) }
+          prismaServiceAny.$transaction = jest.fn().mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) => cb(prismaServiceAny))
         })
 
         it('should create account when signing in with confirmation token', async () => {
@@ -301,7 +308,7 @@ class AuthServiceTest extends ServiceTestBase<AuthService> {
       it('should sign out user successfully', async () => {
         await successScenario.execute(async () => {
           // Act
-          const result = await this.service.signOut(signOutDto)
+          const result = await this.service.signOut(signOutDto.userId)
 
           // Assert
           expect(result).toEqual({ message: 'Logged out successfully' })

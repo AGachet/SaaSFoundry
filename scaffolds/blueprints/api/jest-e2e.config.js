@@ -9,7 +9,8 @@ module.exports = {
   moduleNameMapper: {
     '^@modules/(.*)$': '<rootDir>/src/modules/$1',
     '^@configs/(.*)$': '<rootDir>/src/configs/$1',
-    '^@common/(.*)$': '<rootDir>/src/common/$1'
+    '^@common/(.*)$': '<rootDir>/src/common/$1',
+    '^@/(.*)$': '<rootDir>/src/$1'
   },
   globalSetup: '<rootDir>/src/configs/test/e2e-environment.ts',
   globalTeardown: '<rootDir>/src/configs/test/e2e-teardown.ts'

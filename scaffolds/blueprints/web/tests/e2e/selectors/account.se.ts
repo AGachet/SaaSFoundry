@@ -483,11 +483,7 @@ const selectors = {
     },
     newEntityDialog: {
       title: { name: /^New entity$/i },
-      subtitle: { name: /^Create a new entity to attach to your account$/i },
-      entity: {
-        blockId: 'entity-details',
-        title: { name: /^Entity details$/i }
-      },
+      subtitle: { name: /^Create a new entity with its organization$/i },
       organization: {
         blockId: 'organization-details',
         title: { name: /^Organization details$/i },

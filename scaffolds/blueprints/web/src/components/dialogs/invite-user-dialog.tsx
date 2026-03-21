@@ -45,22 +45,21 @@ export function InviteUserDialog({ isOpen, onOpenChange }: InviteUserDialogProps
   const { t: tCommon } = useTranslation('common')
   // Create extended schema based on existing API schema
   const baseInviteSchema = useInviteUserSchema()
-  const formSchema = baseInviteSchema.payload
-    .extend({
-      isDirectlyLinked: z.boolean().default(false)
-    })
-    .refine(
-      (data) => {
-        // At least one entity or direct link must be selected
-        return data.isDirectlyLinked || (data.entityIds && data.entityIds.length > 0)
-      },
-      {
-        message: tCommon('fields.errors.tk_minOneEntityOrDirectLink_'),
-        path: ['entityIds']
-      }
-    )
+  const formSchemaBase = baseInviteSchema.payload.extend({
+    isDirectlyLinked: z.boolean()
+  })
+  const formSchema = formSchemaBase.refine(
+    (data) => {
+      // At least one entity or direct link must be selected
+      return data.isDirectlyLinked || (data.entityIds && data.entityIds.length > 0)
+    },
+    {
+      message: tCommon('fields.errors.tk_minOneEntityOrDirectLink_'),
+      path: ['entityIds']
+    }
+  )
 
-  type FormValues = z.infer<typeof formSchema>
+  type FormValues = z.infer<typeof formSchemaBase>
 
   const queryClient = useQueryClient()
   const [searchRoles, setSearchRoles] = useState('')

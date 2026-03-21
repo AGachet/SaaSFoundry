@@ -11,6 +11,7 @@ import { AccountAccessService } from '@common/services/account-access/account-ac
 import { Logger } from '@common/services/logger/logger.service'
 import { PrismaService } from '@configs/prisma/services/prisma.service'
 import { OrganizationService } from '@modules/organizations/services/organization.service'
+import { StorageService } from '@modules/storage/services/storage.service'
 
 /**
  * Test infrastructure
@@ -37,7 +38,16 @@ class OrganizationServiceTest extends ServiceTestBase<OrganizationService> {
     return [
       { provide: PrismaService, useValue: mockPrismaService },
       { provide: Logger, useValue: mockLogger },
-      { provide: AccountAccessService, useValue: mockAccountAccessService }
+      { provide: AccountAccessService, useValue: mockAccountAccessService },
+      {
+        provide: StorageService,
+        useValue: {
+          uploadFile: jest.fn(),
+          deleteFile: jest.fn(),
+          extractKeyFromUrl: jest.fn(),
+          buildKey: jest.fn()
+        }
+      }
     ]
   }
 

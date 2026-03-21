@@ -229,7 +229,7 @@ const selectors = {
     requiredPassword: /Password is required/i,
     invalidEmail: /Email is invalid/i,
     incorrectCredentials: /The provided credentials do not match any account/i,
-    shortPassword: /Password must contain at least 6 characters/i,
+    shortPassword: /Password must contain at least 8 characters/i,
     passwordComplexity: /Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number/i,
     requiredFirstName: /First name is required/i,
     requiredLastName: /Last name is required/i,

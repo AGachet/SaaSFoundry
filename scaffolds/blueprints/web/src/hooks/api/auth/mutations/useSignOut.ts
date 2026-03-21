@@ -46,7 +46,7 @@ export const useSignOut = () => {
       if (!me?.userId) return { message: 'User already signed out' }
 
       // Send data to the API (userId is extracted from JWT on the server)
-      const response = await apiClient.post<SignOutResponseDto>('/auth/signout')
+      const response = await apiClient.post<SignOutResponseDto>('/auth/signout', undefined)
       return schemas.response.parse(response)
     },
     onSuccess: async () => {

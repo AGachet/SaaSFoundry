@@ -311,10 +311,10 @@ test.describe('Account Management Flow', () => {
 
     test('should display table with correct columns', async ({ page }) => {
       const headers = selectors.accountEntities.table.headers
-      await expect(page.getByRole('cell', headers.entity)).toBeVisible()
-      await expect(page.getByRole('cell', headers.status)).toBeVisible()
-      await expect(page.getByRole('cell', headers.organization)).toBeVisible()
-      await expect(page.getByRole('cell', headers.createdAt)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.entity)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.status)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.organization)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.createdAt)).toBeVisible()
     })
 
     test('should display correct entity row with all data', async ({ page }) => {
@@ -324,15 +324,14 @@ test.describe('Account Management Flow', () => {
       const firstEntity = testApi.entities.success.body.items[0]
       const firstRow = rows.first()
 
-      // Check entity name and description
+      // Check entity name (shown as sub-text under organization name)
       await expect(firstRow.getByText(new RegExp(firstEntity.name))).toBeVisible()
-      await expect(firstRow.getByText(new RegExp(firstEntity.description))).toBeVisible()
 
       // Check status
       await expect(firstRow.getByText(/Active/i)).toBeVisible()
 
-      // Check organization
-      await expect(firstRow.getByText(new RegExp(firstEntity.organization.name))).toBeVisible()
+      // Check organization (appears in both entity name cell and organization column, use .first())
+      await expect(firstRow.getByText(new RegExp(firstEntity.organization.name)).first()).toBeVisible()
 
       // Check created at
       const createdAt = new Date(firstEntity.createdAt).toLocaleDateString('en-US', {
@@ -355,11 +354,6 @@ test.describe('Account Management Flow', () => {
         await expect(dialog.getByText(new RegExp(selectors.accountEntities.newEntityDialog.subtitle.name))).toBeVisible()
         // Check create button
         await expect(page.getByRole('button', selectors.accountEntities.newEntityDialog.cta.create)).toBeVisible()
-        // Check entity content
-        const entityContent = dialog.getByTestId(selectors.accountEntities.newEntityDialog.entity.blockId)
-        await expect(entityContent.getByText(new RegExp(selectors.accountEntities.newEntityDialog.entity.title.name))).toBeVisible()
-        await expect(entityContent.getByLabel(globaleSelectors.fields.name)).toBeVisible()
-        await expect(entityContent.getByLabel(globaleSelectors.fields.description)).toBeVisible()
         // Check organization content
         const organizationContent = dialog.getByTestId(selectors.accountEntities.newEntityDialog.organization.blockId)
         await expect(organizationContent.getByText(new RegExp(selectors.accountEntities.newEntityDialog.organization.title.name))).toBeVisible()
@@ -380,9 +374,6 @@ test.describe('Account Management Flow', () => {
 
         // Check error message
         dialog.getByRole('button', selectors.accountEntities.newEntityDialog.cta.create).click()
-        const entityContent = dialog.getByTestId(selectors.accountEntities.newEntityDialog.entity.blockId)
-        await expect(entityContent.getByText(globaleSelectors.fields.errors.minLength)).toBeVisible()
-
         const organizationContent = dialog.getByTestId(selectors.accountEntities.newEntityDialog.organization.blockId)
         await expect(organizationContent.getByText(globaleSelectors.fields.errors.minLength)).toBeVisible()
       })
@@ -418,11 +409,6 @@ test.describe('Account Management Flow', () => {
         const dialog = page.getByRole('dialog')
         await page.getByRole('button', selectors.accountEntities.cta.createEntity).click()
         await expect(dialog).toBeVisible()
-
-        // Fill Entity form with valid data
-        const entityContent = dialog.getByTestId(selectors.accountEntities.newEntityDialog.entity.blockId)
-        await entityContent.getByLabel(globaleSelectors.fields.name).fill(testData.entityName2)
-        await entityContent.getByLabel(globaleSelectors.fields.description).fill(testData.entityDescription2)
 
         // Fill Organization form with valid data
         const organizationContent = dialog.getByTestId(selectors.accountEntities.newEntityDialog.organization.blockId)
@@ -519,11 +505,11 @@ test.describe('Account Management Flow', () => {
 
     test('should display table with correct columns', async ({ page }) => {
       const headers = selectors.accountUsers.table.headers
-      await expect(page.getByRole('cell', headers.user)).toBeVisible()
-      await expect(page.getByRole('cell', headers.status)).toBeVisible()
-      await expect(page.getByRole('cell', headers.entities)).toBeVisible()
-      await expect(page.getByRole('cell', headers.roles)).toBeVisible()
-      await expect(page.getByRole('cell', headers.createdAt)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.user)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.status)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.entities)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.roles)).toBeVisible()
+      await expect(page.getByRole('columnheader', headers.createdAt)).toBeVisible()
     })
 
     test('should display correct entity row with all data', async ({ page }) => {
