@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useInsertionEffect, useMemo } from 'react'
 
 interface PageLoaderProps {
   className?: string
@@ -8,8 +8,6 @@ interface PageLoaderProps {
 }
 
 export const PageLoader = ({ className = 'scatterboxloader', background = '#FFFFFF', primaryColor = '#FF6B00', duration = 1 }: PageLoaderProps) => {
-  const [mounted, setMounted] = useState(false)
-
   // Function to darken a color
   const darkenColor = (color: string, amount = 0.15): string => {
     // Convert hex color to RGB
@@ -76,11 +74,8 @@ export const PageLoader = ({ className = 'scatterboxloader', background = '#FFFF
     []
   )
 
-  // Dynamically generate keyframes
-  useEffect(() => {
-    setMounted(true)
-
-    // Add dynamic keyframes to the head
+  // Dynamically generate keyframes (useInsertionEffect fires before paint)
+  useInsertionEffect(() => {
     const style = document.createElement('style')
     style.innerHTML =
       boxMoveParams
@@ -296,8 +291,6 @@ export const PageLoader = ({ className = 'scatterboxloader', background = '#FFFF
       document.head.removeChild(style)
     }
   }, [background, duration, primary, primaryColor, primaryRGBA, boxMoveParams, boxScaleParams])
-
-  if (!mounted) return null
 
   // Define animation styles for each box
   const getBoxStyles = (moveIndex: number, scaleIndex: number) => {

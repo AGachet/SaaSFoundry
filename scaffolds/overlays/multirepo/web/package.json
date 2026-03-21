@@ -44,7 +44,7 @@
     "test:e2e:report": "playwright show-report",
     "test:full": "npm run format && npm run lint && npm run type-check && npm run test:e2e",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
-    "postinstall": "if [ \"$HUSKY\" != \"0\" ]; then npx husky install; find .husky -type f -exec chmod +x {} +; if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi; fi"
+    "postinstall": "if [ \"$CI\" = \"true\" ]; then npx playwright install --with-deps; else npx playwright install; fi; if [ \"$HUSKY\" != \"0\" ]; then npx husky install; find .husky -type f -exec chmod +x {} +; if [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi; fi"
   },
   "keywords": [
     "saasfoundry",

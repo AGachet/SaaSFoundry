@@ -18,6 +18,23 @@ load_env_variables() {
     fi
 }
 
+wait_for_database() {
+    echo "• Waiting for database connection..."
+    local retries=0
+    local max_retries=15
+    while [ $retries -lt $max_retries ]; do
+        if psql "$DATABASE_URL" -c "SELECT 1" > /dev/null 2>&1; then
+            echo "  ✓ Database is accepting connections"
+            return 0
+        fi
+        retries=$((retries + 1))
+        echo "  ↳ Attempt $retries/$max_retries - waiting..."
+        sleep 1
+    done
+    echo "  ❌ Database not ready after $max_retries attempts"
+    exit 1
+}
+
 clean_database() {
     echo "• Cleaning database objects..."
     echo "  ↳ Dropping triggers and functions"
@@ -114,6 +131,7 @@ main() {
     echo ""
 
     load_env_variables
+    wait_for_database
     clean_database
     apply_schema
     apply_sql_files "${SQL_FUNCTIONS_DIR}" "functions"
