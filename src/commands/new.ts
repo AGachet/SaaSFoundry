@@ -5,8 +5,7 @@ import ora from 'ora'
 import { exec } from 'shelljs'
 
 import { createApiApp } from '../builders/api.builder'
-import { createDbApp } from '../builders/db.builder'
-import { createS3App } from '../builders/s3.builder'
+import { createDevServicesCompose } from '../builders/dev-services.builder'
 import { createWebApp } from '../builders/web.builder'
 import { getUserStartProjectInputs } from '../prompts/project.prompts'
 import { initAndStartDb } from '../runners/database.runner'
@@ -38,7 +37,8 @@ export async function newCommand() {
   }).start()
 
   // Calculate total steps
-  const totalSteps = 3 + (startProjectAnswers.dbSetup === 'docker' ? 1 : 0) + (startProjectAnswers.s3Setup === 'docker' ? 1 : 0)
+  const hasDevServices = startProjectAnswers.dbSetup === 'docker' || startProjectAnswers.s3Setup === 'docker'
+  const totalSteps = 3 + (hasDevServices ? 1 : 0)
   let currentStep = 0
 
   const updateProgress = () => {
@@ -93,23 +93,16 @@ export async function newCommand() {
     })
     updateProgress()
 
-    // Create DB app
-    if (startProjectAnswers.dbSetup === 'docker') {
-      spinner.text = 'Setting up database application...'
-      await createDbApp({
-        isMonorepo: startProjectAnswers.isMonorepo,
+    // Create dev services compose file (DB and/or S3 when using Docker)
+    if (hasDevServices) {
+      spinner.text = 'Setting up dev services...'
+      const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
+      await createDevServicesCompose({
+        apiPath,
         projectName: startProjectAnswers.projectName,
-        dbCredentials: startProjectAnswers.dbCredentials
-      })
-      updateProgress()
-    }
-
-    // Create S3 app
-    if (startProjectAnswers.s3Setup === 'docker') {
-      spinner.text = 'Setting up S3 storage (MinIO)...'
-      await createS3App({
-        isMonorepo: startProjectAnswers.isMonorepo,
-        projectName: startProjectAnswers.projectName,
+        dbSetup: startProjectAnswers.dbSetup,
+        dbCredentials: startProjectAnswers.dbCredentials,
+        s3Setup: startProjectAnswers.s3Setup,
         s3Credentials: startProjectAnswers.s3Credentials
       })
       updateProgress()
@@ -140,38 +133,62 @@ export async function newCommand() {
   /**
    * Project start
    */
-  // Propose to start DB if using Docker or if credentials are provided
-  if (startProjectAnswers.dbSetup === 'docker' || startProjectAnswers.dbSetup === 'credentials') {
-    const { startDb } = await inquirer.prompt<{ startDb: boolean }>([
+  const needsDbInit = startProjectAnswers.dbSetup === 'docker' || startProjectAnswers.dbSetup === 'credentials'
+  const needsS3Start = startProjectAnswers.s3Setup === 'docker'
+  const needsServiceSetup = needsDbInit || needsS3Start
+
+  if (needsServiceSetup) {
+    // Build a question that accurately describes what will happen
+    let initMessage: string
+    if (needsDbInit && needsS3Start) {
+      initMessage = 'Do you want to start dev services and initialize the database now?'
+    } else if (needsS3Start) {
+      initMessage = 'Do you want to start dev services (MinIO) now?'
+    } else {
+      initMessage = 'Do you want to initialize the database now?'
+    }
+
+    const { startServices } = await inquirer.prompt<{ startServices: boolean }>([
       {
         type: 'confirm',
-        name: 'startDb',
-        message: 'Do you want to initialize and start the database now?',
+        name: 'startServices',
+        message: initMessage,
         default: true
       }
     ])
 
-    if (startDb) {
-      const dbSpinner = ora('Starting and initializing database...').start()
+    if (startServices) {
+      let servicesOk = true
 
-      try {
-        await initAndStartDb(startProjectAnswers.projectName, startProjectAnswers.dbSetup, startProjectAnswers.isMonorepo, dbSpinner)
-        dbSpinner.succeed(chalk.green('Database initialized and started successfully'))
+      // Initialize database (start container if Docker, then run migrations)
+      if (needsDbInit) {
+        const dbSpinner = ora(startProjectAnswers.dbSetup === 'docker' ? 'Starting database and running initial setup...' : 'Initializing database...').start()
 
-        // Start S3 if Docker setup was selected
-        if (startProjectAnswers.s3Setup === 'docker') {
-          const s3Spinner = ora('Starting MinIO S3 storage...').start()
-          try {
-            await initAndStartS3(startProjectAnswers.projectName, startProjectAnswers.isMonorepo, s3Spinner)
-            s3Spinner.succeed(chalk.green('MinIO S3 storage started successfully'))
-            console.log(chalk.blue('MinIO Console available at: http://localhost:9001'))
-          } catch (error) {
-            s3Spinner.fail(chalk.red('Failed to start MinIO S3 storage'))
-            console.error(error)
-          }
+        try {
+          await initAndStartDb(startProjectAnswers.projectName, startProjectAnswers.dbSetup, startProjectAnswers.isMonorepo, dbSpinner)
+          dbSpinner.succeed(chalk.green('Database initialized successfully'))
+        } catch (error) {
+          dbSpinner.fail(chalk.red('Failed to initialize database'))
+          console.error(error)
+          servicesOk = false
         }
+      }
 
-        // If database started successfully, propose to start apps
+      // Start S3 independently from database
+      if (needsS3Start) {
+        const s3Spinner = ora('Starting MinIO S3 storage...').start()
+        try {
+          await initAndStartS3(startProjectAnswers.projectName, startProjectAnswers.isMonorepo, s3Spinner)
+          s3Spinner.succeed(chalk.green('MinIO S3 storage started successfully'))
+          console.log(chalk.blue('MinIO Console available at: http://localhost:9001'))
+        } catch (error) {
+          s3Spinner.fail(chalk.red('Failed to start MinIO S3 storage'))
+          console.error(error)
+        }
+      }
+
+      // Propose to start apps
+      if (servicesOk) {
         const { startApps } = await inquirer.prompt<{
           startApps: 'backend' | 'frontend' | 'all' | 'none'
         }>([
@@ -237,12 +254,9 @@ export async function newCommand() {
             console.warn(chalk.yellow('Could not open browser automatically. Please navigate to http://localhost:5173'))
           }
         }
-      } catch (error) {
-        dbSpinner.fail(chalk.red('Failed to start database'))
-        console.error(error)
       }
     } else {
-      // User doesn't want to start DB, let's open terminals for both apps
+      // User doesn't want to start services, open terminals for both apps
       const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
       const webPath = startProjectAnswers.isMonorepo ? 'apps/web' : `apps/${startProjectAnswers.projectName}-web`
 
@@ -258,7 +272,7 @@ export async function newCommand() {
       })
     }
   } else {
-    // User chose manual DB setup, let's open terminals for both apps
+    // Nothing to start (DB=manual, S3=manual/credentials), open terminals for both apps
     const apiPath = startProjectAnswers.isMonorepo ? 'apps/api' : `apps/${startProjectAnswers.projectName}-api`
     const webPath = startProjectAnswers.isMonorepo ? 'apps/web' : `apps/${startProjectAnswers.projectName}-web`
 

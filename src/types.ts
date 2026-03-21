@@ -74,6 +74,15 @@ export interface CreateS3AppParams {
   s3Credentials?: S3Credentials
 }
 
+export interface CreateDevServicesParams {
+  apiPath: string
+  projectName: string
+  dbSetup: 'docker' | 'credentials' | 'manual'
+  dbCredentials?: DbCredentials
+  s3Setup: 'docker' | 'credentials' | 'manual'
+  s3Credentials?: S3Credentials
+}
+
 // Paths
 export const blueprintsPath = resolve(__dirname, '../scaffolds/blueprints')
 export const overlaysPath = resolve(__dirname, '../scaffolds/overlays')

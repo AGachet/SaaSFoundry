@@ -105,14 +105,14 @@ export async function getUserStartProjectInputs() {
       message: 'Do you want to set up a development database with Docker? (you must have docker installed)',
       choices: [
         {
-          name: 'Yes (create a docker-compose.db.yml file)',
+          name: 'Yes, with Docker (adds PostgreSQL to docker-compose.dev-services.yml)',
           value: 'docker'
         },
         {
-          name: "No, let's just connect api to my db following these credentials",
+          name: 'No, connect the API to my existing database',
           value: 'credentials'
         },
-        { name: "No I'll do it later", value: 'manual' }
+        { name: "No, I'll do it later", value: 'manual' }
       ]
     },
     {
@@ -241,7 +241,7 @@ export async function getUserStartProjectInputs() {
       message: 'Do you want to set up object storage (S3) for file uploads (logos, documents, etc.)?',
       choices: [
         {
-          name: 'Yes, set up MinIO with Docker (free, S3-compatible)',
+          name: 'Yes, add MinIO with Docker (free, S3-compatible, added to dev services)',
           value: 'docker'
         },
         {

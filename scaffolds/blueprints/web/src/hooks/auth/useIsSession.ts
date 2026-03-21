@@ -14,6 +14,7 @@ import type { MeResponseDto } from '@/hooks/api/auth'
 export const useIsSessionActive = () => {
   const { data: me } = useQuery<MeResponseDto>({
     queryKey: ['authMe'],
+    queryFn: () => Promise.reject(new Error('Cache-only query')),
     enabled: false
   })
 

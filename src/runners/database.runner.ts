@@ -9,9 +9,9 @@ export async function initAndStartDb(projectName: string, dbSetup: 'docker' | 'c
   if (dbSetup === 'docker') {
     // Create network if it doesn't exist
     await exec(`docker network create ${projectName}-network > /dev/null 2>&1 || true`)
-    // Start the database
-    const dbPath = isMonorepo ? 'apps/db' : `apps/${projectName}-db`
-    await exec(`docker-compose -f ${dbPath}/docker-compose.db.yml up -d > /dev/null 2>&1`)
+    // Start the database from unified dev-services compose
+    const apiPath = isMonorepo ? 'apps/api' : `apps/${projectName}-api`
+    await exec(`docker compose -f ${apiPath}/docker-compose.dev-services.yml up -d db-dev > /dev/null 2>&1`)
   }
 
   // Initialize the database with required configurations

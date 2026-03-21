@@ -53,6 +53,9 @@
     "db:update:dev": "./scripts/update-db-dev.sh",
     "db:update:prod": "./scripts/update-db-prod.sh",
     "db:init:test": "./scripts/init-test-db.sh",
+    "services:up": "docker compose -f docker-compose.dev-services.yml up -d",
+    "services:down": "docker compose -f docker-compose.dev-services.yml down",
+    "services:reset": "docker compose -f docker-compose.dev-services.yml down -v && docker compose -f docker-compose.dev-services.yml up -d",
     "version:manage": "./scripts/tag-manager.sh \"$(git symbolic-ref --short HEAD)\"",
     "prepare": "if [ \"$HUSKY\" != \"0\" ]; then husky; fi",
     "postinstall": "if [ \"$HUSKY\" != \"0\" ] && [ -d './scripts' ]; then find ./scripts -type f -name '*.sh' -exec chmod +x {} +; fi"
