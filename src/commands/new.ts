@@ -14,7 +14,7 @@ import { initAndStartS3 } from '../runners/s3.runner'
 import { startBackend, startFrontend, startMonorepoApps, waitForServer } from '../runners/server.runner'
 import { getHuskySetupCommand, openTerminal } from '../runners/terminal.runner'
 import { SaaSFoundryManifest } from '../types'
-import { checkNodeVersion, setDefaultDbCredentials } from '../utils'
+import { checkNodeVersion, computeFileHashes, setDefaultDbCredentials } from '../utils'
 import { version as cliVersion } from '../../package.json'
 
 /**
@@ -136,8 +136,9 @@ export async function newCommand() {
       updateProgress()
     }
 
-    // Generate .saasfoundry.json manifest
-    spinner.text = 'Writing project manifest...'
+    // Generate .saasfoundry.json manifest with file hashes
+    spinner.text = 'Computing file hashes for update tracking...'
+    const fileHashes = await computeFileHashes('.')
     const manifest: SaaSFoundryManifest = {
       version: cliVersion,
       generatedAt: new Date().toISOString(),
@@ -148,7 +149,8 @@ export async function newCommand() {
         s3Setup: startProjectAnswers.s3Setup,
         dbSetup: startProjectAnswers.dbSetup,
         includeAnalytics: startProjectAnswers.includeAnalytics
-      }
+      },
+      fileHashes
     }
     await writeFile('.saasfoundry.json', JSON.stringify(manifest, null, 2))
 

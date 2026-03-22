@@ -1,8 +1,58 @@
 import crypto from 'crypto'
 import { execSync } from 'child_process'
 import fs from 'fs'
+import path from 'path'
 
 import { DbCredentials } from './types'
+
+/**
+ * Patterns to ignore when computing file hashes for the manifest.
+ * These files are either auto-generated, contain secrets, or are not managed by SaaSFoundry.
+ */
+const HASH_IGNORE_PATTERNS = ['node_modules', '.git', 'dist', 'build', '.next', '.turbo', 'coverage', '.env', '.env.test', 'package-lock.json', '.saasfoundry.json', '.DS_Store']
+
+/**
+ * Check if a file path should be ignored for hash computation.
+ */
+function shouldIgnore(filePath: string): boolean {
+  const parts = filePath.split(path.sep)
+  return parts.some((part) => HASH_IGNORE_PATTERNS.includes(part))
+}
+
+/**
+ * Compute SHA-256 hash of a file's content.
+ */
+export function hashFileContent(content: string): string {
+  return crypto.createHash('sha256').update(content).digest('hex')
+}
+
+/**
+ * Walk a directory recursively and compute SHA-256 hashes for all tracked files.
+ * Returns a map of relative file paths to their hashes.
+ */
+export async function computeFileHashes(dir: string): Promise<Record<string, string>> {
+  const hashes: Record<string, string> = {}
+
+  async function walk(currentDir: string) {
+    const entries = await fs.promises.readdir(currentDir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name)
+      const relativePath = path.relative(dir, fullPath)
+
+      if (shouldIgnore(relativePath)) continue
+
+      if (entry.isDirectory()) {
+        await walk(fullPath)
+      } else if (entry.isFile()) {
+        const content = await fs.promises.readFile(fullPath, 'utf8')
+        hashes[relativePath] = hashFileContent(content)
+      }
+    }
+  }
+
+  await walk(dir)
+  return hashes
+}
 
 /**
  * Required Node.js major version for generated projects (Prisma 7 + Vite 7)

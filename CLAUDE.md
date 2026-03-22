@@ -170,6 +170,11 @@ Generated projects carry a `.saasfoundry.json` manifest at the project root:
     "s3Setup": "manual",
     "dbSetup": "docker",
     "includeAnalytics": false
+  },
+  "fileHashes": {
+    "apps/api/package.json": "abc123...",
+    "apps/api/src/main.ts": "def456...",
+    "apps/web/src/main.tsx": "ghi789..."
   }
 }
 ```
@@ -177,13 +182,43 @@ Generated projects carry a `.saasfoundry.json` manifest at the project root:
 - **version**: SaaSFoundry CLI version used to generate the project
 - **structure**: `monorepo` or `multirepo`
 - **modules**: Records which modules are installed and their configuration
+- **fileHashes**: SHA-256 hashes of all generated files (for three-way merge during updates)
 - **No secrets are stored** — only module choices (none/mailersend, manual/docker/credentials, true/false)
 
 The manifest is:
 
-- Created during `sf new` (in `src/commands/new.ts`)
+- Created during `sf new` (in `src/commands/new.ts`) with file hashes computed via `computeFileHashes()`
 - Read and updated during `sf update` (in `src/commands/update.ts`)
 - Defined by `SaaSFoundryManifest` interface in `src/types.ts`
+
+### Template Update System (Three-Way Merge)
+
+When a user runs `sf update` and their project version differs from the CLI version, the update command performs a **three-way file comparison**:
+
+1. **Regenerate** the project in a temp directory using the current CLI with the same options from the manifest (side effects like npm install and git init are disabled)
+2. **Compare** three versions of each file:
+   - **Base**: Hash stored in manifest (what was originally generated)
+   - **Current**: Hash of the user's current file
+   - **Target**: Hash from the regenerated project (what the new CLI produces)
+3. **Apply** changes based on the comparison:
+
+| Base vs Current           | Base vs Target               | Action                                                      |
+| ------------------------- | ---------------------------- | ----------------------------------------------------------- |
+| Same (untouched)          | Different (template changed) | **Auto-update** — safe to replace                           |
+| Different (user modified) | Same (template unchanged)    | **Skip** — user's changes are preserved                     |
+| Different                 | Different                    | **Conflict** — save as `.saasfoundry.new` for manual review |
+| Same                      | Same                         | **Skip** — nothing changed                                  |
+
+**Files excluded from hash tracking** (in `src/utils.ts` → `HASH_IGNORE_PATTERNS`):
+
+- `node_modules/`, `.git/`, `dist/`, `build/`, `.turbo/`, `coverage/`
+- `.env`, `.env.test` (contain secrets)
+- `package-lock.json`, `.saasfoundry.json`, `.DS_Store`
+
+**Key implementation files:**
+
+- `src/utils.ts` → `computeFileHashes()`, `hashFileContent()`
+- `src/commands/update.ts` → `regenerateInTempDir()`, `computeFileUpdates()`, `applyFileUpdates()`
 
 ### Files Affected by Each Module
 

@@ -103,6 +103,7 @@ export interface SaaSFoundryManifest {
     dbSetup: 'docker' | 'credentials' | 'manual'
     includeAnalytics: boolean
   }
+  fileHashes?: Record<string, string>
 }
 
 // Paths
