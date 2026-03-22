@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { mkdir } from 'fs/promises'
+import { mkdir, writeFile } from 'fs/promises'
 import ora from 'ora'
 import { exec } from 'shelljs'
 
@@ -13,7 +13,9 @@ import { initAndStartDb } from '../runners/database.runner'
 import { initAndStartS3 } from '../runners/s3.runner'
 import { startBackend, startFrontend, startMonorepoApps, waitForServer } from '../runners/server.runner'
 import { getHuskySetupCommand, openTerminal } from '../runners/terminal.runner'
+import { SaaSFoundryManifest } from '../types'
 import { checkNodeVersion, setDefaultDbCredentials } from '../utils'
+import { version as cliVersion } from '../../package.json'
 
 /**
  * Main function
@@ -133,6 +135,22 @@ export async function newCommand() {
       })
       updateProgress()
     }
+
+    // Generate .saasfoundry.json manifest
+    spinner.text = 'Writing project manifest...'
+    const manifest: SaaSFoundryManifest = {
+      version: cliVersion,
+      generatedAt: new Date().toISOString(),
+      structure: startProjectAnswers.isMonorepo ? 'monorepo' : 'multirepo',
+      projectName: startProjectAnswers.projectName,
+      modules: {
+        emailService: startProjectAnswers.emailService,
+        s3Setup: startProjectAnswers.s3Setup,
+        dbSetup: startProjectAnswers.dbSetup,
+        includeAnalytics: startProjectAnswers.includeAnalytics
+      }
+    }
+    await writeFile('.saasfoundry.json', JSON.stringify(manifest, null, 2))
 
     spinner.succeed(chalk.green('Project setup completed successfully'))
   } catch (error) {

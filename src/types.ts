@@ -92,6 +92,19 @@ export interface CreateDevServicesParams {
   s3Credentials?: S3Credentials
 }
 
+export interface SaaSFoundryManifest {
+  version: string
+  generatedAt: string
+  structure: 'monorepo' | 'multirepo'
+  projectName: string
+  modules: {
+    emailService: 'none' | 'mailersend'
+    s3Setup: 'docker' | 'credentials' | 'manual'
+    dbSetup: 'docker' | 'credentials' | 'manual'
+    includeAnalytics: boolean
+  }
+}
+
 // Paths
 export const blueprintsPath = resolve(__dirname, '../scaffolds/blueprints')
 export const overlaysPath = resolve(__dirname, '../scaffolds/overlays')

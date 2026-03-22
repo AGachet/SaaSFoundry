@@ -3,6 +3,7 @@ import { readFile, rm, writeFile } from 'fs/promises'
 import { resolve } from 'path'
 import { exec } from 'shelljs'
 
+import { installAnalyticsModule } from '../installers/analytics.installer'
 import { blueprintsPath, CreateWebAppParams, overlaysPath } from '../types'
 import { fileExists, getNvmPrefix, validateProjectName } from '../utils'
 
@@ -66,25 +67,9 @@ export async function createWebApp({ isMonorepo, projectName, projectDescription
     }
   }
 
-  // Analytics (Umami) integration
+  // Install Umami analytics module (if selected)
   if (includeAnalytics) {
-    // Copy analytics overlay module
-    await copy(resolve(overlaysPath, 'modules/analytics'), `${webPath}/src/lib/analytics`)
-
-    // Uncomment analytics code in main.tsx
-    const mainTsxPath = `${webPath}/src/main.tsx`
-    let mainTsxContent = await readFile(mainTsxPath, 'utf8')
-    mainTsxContent = mainTsxContent.replace(/\/\/ TODO monitoring-active: /g, '')
-    await writeFile(mainTsxPath, mainTsxContent)
-
-    // Uncomment analytics env vars in .env
-    const webEnvPath = `${webPath}/.env`
-    if (await fileExists(webEnvPath)) {
-      let webEnvContent = await readFile(webEnvPath, 'utf8')
-      webEnvContent = webEnvContent.replace(/# VITE_ANALYTICS_URL=""/, 'VITE_ANALYTICS_URL=""')
-      webEnvContent = webEnvContent.replace(/# VITE_ANALYTICS_WEBSITE_ID=""/, 'VITE_ANALYTICS_WEBSITE_ID=""')
-      await writeFile(webEnvPath, webEnvContent)
-    }
+    await installAnalyticsModule({ webPath })
   }
 
   // Initialize Git repository
